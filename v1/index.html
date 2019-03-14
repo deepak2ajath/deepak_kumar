@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Basic page needs -->
+<meta charset="utf-8">
+<!--[if IE]>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <![endif]-->
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<title>Ziqqi - Customer Support</title>
+<meta name="description" content="">
+
+<!-- Mobile specific metas  -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Favicon  -->
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
+<!-- CSS Style -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	
+<!-- jquery js --> 
+<script type="text/javascript" src="js/jquery.min.js"></script> 
+
+<!-- bootstrap js --> 
+<script type="text/javascript" src="js/bootstrap.min.js"></script> 
+</body>
+
+<!--  Main Container -->
+<section class="main-container">
+	<div class="main container-fluid">
+		<div class="row-fluid">
+			<div class="col-main col-sm-4 col-xs-12">
+				<div class="my-account">
+					<div class="page-title">
+						<h2>Orders</h2>
+					</div>
+
+				<div class="top-search">
+                <div id="search">
+                  <form>
+                    <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Search" name="search">
+                      <button class="btn-search" type="button"><i class="fa fa-search"></i></button>
+                      
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+					<div class="orders-list table-responsive"> 
+              <!--orders list table-->
+              <table class="table table-bordered cart_summary table-striped">
+                <thead>
+                  <tr> 
+                    <!--titles for td-->
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr> 
+                    <!--order number-->
+                    <td data-title="Order ID">#12345</td>
+                    <!--order date-->
+                    <td data-title="Order Date">2019-01-28</td>
+                    <!--order status-->
+                    <td data-title="Order Status">Confirmed</td>
+                    <!--quanity-->
+                    <td data-title="Total"><span class="order-total">$79.00</span></td>
+                  </tr>
+                  <tr> 
+                    <!--order number-->
+                    <td data-title="Order ID">#67895</td>
+                    <!--order date-->
+                    <td data-title="Order Date">2019-01-25</td>
+                    <!--order status-->
+                    <td data-title="Order Status">Confirmed</td>
+                    <!--quanity-->
+                    <td data-title="Total"><span class="order-total">$99.00</span></td>
+                  </tr>
+                  <tr> 
+                    <!--order number-->
+                    <td data-title="Order ID">#54321</td>
+                    <!--order date-->
+                    <td data-title="Order Date">2019-01-10</td>
+                    <!--order status-->
+                    <td data-title="Order Status">Confirmed</td>
+                    <!--quanity-->
+                    <td data-title="Total"><span class="order-total">$89.00</span></td>
+                  </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+				</div>
+			</div>
+
+			<div class="col-main col-sm-4 col-xs-12">
+				<div class="my-account">
+					<div class="page-title">
+						<h2>Customer Details</h2>
+					</div>
+					<div class="block-content">
+						<b>Customer Name: Muhamed Nijil</b><br>
+						Billing Phone Number: +971 50 123456
+				</div>
+				</div>
+
+				<div class="my-account">
+					<div class="page-title">
+						<h2>Notes for this call</h2>
+					</div>
+					<div class="block-content">
+					<h5>REASON FOR CALL</h5>
+					<div class="form-selector">
+					<label>Order</label>
+					<select class="form-control">
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+					</select>
+				</div>
+				<div class="form-selector">
+					<label>Notes</label>
+					<textarea class="form-control input-sm" rows="2" id="notes"></textarea>
+				</div>
+					<button class="button"><span>SAVE</span></button>
+				</div>
+				</div>
+
+				<div class="my-account">
+					<div class="page-title">
+						<h2>Notes for old calls</h2>
+					</div>
+					<div class="orders-list table-responsive"> 
+              <!--orders list table-->
+              <table class="table table-bordered cart_summary table-striped">
+                <thead>
+                  <tr> 
+                    <!--titles for td-->
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Order ID</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr> 
+                    <!--order number-->
+                    <td data-title="Order Date">2019-01-28</td>
+                    <!--order date-->
+                    <td data-title="Order Time">12:00</td>
+                    <!--order status-->
+                    <td data-title="Order ID">#12345</td>
+                    <!--quanity-->
+                    <td data-title="Notes">Wrong product delivered</td>
+                  </tr>
+                  <tr> 
+                    <!--order number-->
+                    <td data-title="Order Date">2019-01-28</td>
+                    <!--order date-->
+                    <td data-title="Order Time">12:00</td>
+                    <!--order status-->
+                    <td data-title="Order ID">#12345</td>
+                    <!--quanity-->
+                    <td data-title="Notes">Wrong product delivered</td>
+                  </tr>
+                  <tr> 
+                    <!--order number-->
+                    <td data-title="Order Date">2019-01-28</td>
+                    <!--order date-->
+                    <td data-title="Order Time">12:00</td>
+                    <!--order status-->
+                    <td data-title="Order ID">#12345</td>
+                    <!--quanity-->
+                    <td data-title="Notes">Wrong product delivered</td>
+                  </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+				</div>
+
+			</div>
+
+
+			<div class="col-main col-sm-4 col-xs-12">
+				<div class="my-account">
+					<div class="page-title">
+						<h2>Addresses</h2>
+					</div>
+					<div class="block-content">
+					<h5>BILLING ADDRESS</h5>
+                    Muhamed Nijil<br>
+                    UNITED ARAB EMIRATES<br>
+                    nijil@ziqqi.com<br> 
+                    Mobile :+971 50 123456<br>
+                    <b>Address: </b>HOUSE NO 201                                  
+                   <hr>  
+                   <h5>SHIPPING ADDRESS</h5>
+                   <div class="row">
+                   	<div class="col-sm-6">
+                   	<label>
+                        <input type="radio" name="radio1">
+                        ADDRESS 1
+                    </label>
+                    <address>
+                  Samira<br>
+                  Ziqqi Mart<br>
+                  Airport Road<br>
+                  Near Ambassador Hotel<br>
+                  Hargeisa<br>
+                  Somaliland<br>
+                  T: +252 63 386 2489
+                  </address>
+                   	</div>
+                   	<div class="col-sm-6">
+                   	<label>
+                        <input type="radio" name="radio1">
+                        ADDRESS 2
+                    </label>
+                    <address>
+                  Warda<br>
+                  Ziqqi Mart<br>
+                  Airport Road<br>
+                  Near Ambassador Hotel<br>
+                  Hargeisa<br>
+                  Somaliland<br>
+                  T: +252 63 386 2489
+                  </address>
+                   	</div>
+                   	</div>	
+                   </div>
+				</div>
+
+
+				<div class="my-account">
+					<div class="page-title">
+						<h2>Phone number used for payments</h2>
+					</div>
+					<div class="block-content">
+					<div class="row">
+                   	<div class="col-sm-6">
+                   	<h5>ZAAD</h5>
+                   	<ul>
+                <li>+252 63 386 2489</li>
+                <li>+252 63 386 2489</li>
+                <li>+252 63 386 2489</li>
+                <li>+252 63 386 2489</li>
+              </ul>
+                   	</div>
+                   	<div class="col-sm-6">
+                   	<h5>EDAHAB</h5>
+                   	<ul>
+                <li>+252 63 386 2489</li>
+                <li>+252 63 386 2489</li>
+                <li>+252 63 386 2489</li>
+                <li>+252 63 386 2489</li>
+              </ul>
+                   	</div>
+                   	</div>
+                   </div>
+				</div>
+
+
+			</div>
+
+		</div>
+	</div>
+</section>
+<!--  End Main Container -->
+</html>

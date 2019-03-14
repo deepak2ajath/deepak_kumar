@@ -1,0 +1,57 @@
+[31-Dec-2018 09:23:09 UTC] PHP Fatal error:  Call to undefined function base_url() in /home/ziqqi/public_html/api/v1/application/config/config.php on line 29
+[31-Dec-2018 09:44:36 UTC] PHP Parse error:  syntax error, unexpected ''' (T_CONSTANT_ENCAPSED_STRING) in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 4
+[31-Dec-2018 10:00:01 UTC] PHP Parse error:  syntax error, unexpected 'echo' (T_ECHO), expecting function (T_FUNCTION) in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 18
+[31-Dec-2018 10:00:23 UTC] PHP Parse error:  syntax error, unexpected 'echo' (T_ECHO), expecting function (T_FUNCTION) in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 18
+[31-Dec-2018 10:00:37 UTC] PHP Parse error:  syntax error, unexpected 'echo' (T_ECHO), expecting function (T_FUNCTION) in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 18
+[31-Dec-2018 10:49:07 UTC] PHP Fatal error:  Call to a member function setuserName() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 34
+[31-Dec-2018 10:50:58 UTC] PHP Fatal error:  Call to a member function setuserName() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 33
+[31-Dec-2018 10:51:21 UTC] PHP Fatal error:  Call to a member function setuserName() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 33
+[31-Dec-2018 10:52:48 UTC] PHP Fatal error:  Call to a member function setuserName() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 33
+[31-Dec-2018 10:53:14 UTC] PHP Fatal error:  Call to a member function setuserName() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 33
+[31-Dec-2018 10:54:14 UTC] PHP Fatal error:  Call to a member function setuserName() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 33
+[31-Dec-2018 10:56:16 UTC] PHP Fatal error:  Call to a member function setGender() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 43
+[31-Dec-2018 10:59:59 UTC] PHP Fatal error:  Call to a member function check_customer_email() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 76
+[31-Dec-2018 11:01:11 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:03:48 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:04:11 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:04:37 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:05:01 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:27:02 UTC] PHP Fatal error:  Call to a member function getfeedbackmaster() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 309
+[31-Dec-2018 11:27:21 UTC] PHP Fatal error:  Call to a member function getlanguagemaster() on null in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 329
+[31-Dec-2018 11:29:27 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:32:31 UTC] PHP Parse error:  syntax error, unexpected 'print_r' (T_STRING), expecting ',' or ';' in /home/ziqqi/public_html/api/v1/application/controllers/Ziqqi_api.php on line 73
+[31-Dec-2018 11:33:59 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:35:13 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:37:27 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[31-Dec-2018 11:39:08 UTC] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ziqqi/public_html/api/v1/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:12:16 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:12:47 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:22:42 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:22:52 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:23:54 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:23:55 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:25:16 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:29:12 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:29:14 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:35:13 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:35:15 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:35:17 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:35:31 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:36:02 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:36:04 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 664
+[18-Jan-2019 07:37:12 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:37:14 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[18-Jan-2019 07:37:16 Etc/GMT] PHP Fatal error:  Call to a member function num_rows() on boolean in /home/ajath/public_html/ziqqiapi/system/database/DB_query_builder.php on line 1429
+[24-Jan-2019 10:09:26 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 543
+[24-Jan-2019 12:24:19 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 505
+[24-Jan-2019 12:24:19 Etc/GMT] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ajath/public_html/ziqqiapi/application/models/Api_model.php on line 479
+[29-Jan-2019 08:55:06 UTC] PHP Fatal error:  Call to undefined function home_categories_url() in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 666
+[31-Jan-2019 08:09:55 UTC] PHP Fatal error:  Call to undefined method Api_model::getcategoryimage() in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 665
+[31-Jan-2019 08:12:34 UTC] PHP Fatal error:  Call to undefined method Api_model::getcategoryimage() in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 665
+[31-Jan-2019 08:14:01 UTC] PHP Fatal error:  Call to undefined method Api_model::getcategoryimage() in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 665
+[31-Jan-2019 08:14:04 UTC] PHP Fatal error:  Call to undefined method Api_model::getcategoryimage() in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 665
+[01-Feb-2019 09:47:13 UTC] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ziqqi/public_html/api/application/models/Api_model.php on line 525
+[01-Feb-2019 12:33:15 UTC] PHP Parse error:  syntax error, unexpected '{' in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 1861
+[01-Feb-2019 12:33:35 UTC] PHP Parse error:  syntax error, unexpected '{' in /home/ziqqi/public_html/api/application/controllers/Ziqqi_api.php on line 1861
+[05-Feb-2019 09:42:46 UTC] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ziqqi/public_html/api/application/models/Api_model.php on line 558
+[05-Feb-2019 09:43:01 UTC] PHP Fatal error:  Call to a member function result_array() on boolean in /home/ziqqi/public_html/api/application/models/Api_model.php on line 558
