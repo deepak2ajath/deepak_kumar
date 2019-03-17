@@ -270,6 +270,11 @@ Class Api_model extends CI_Model{
     {
         $this->_cart_id = $id;
     }
+	#Set cart id.
+    // public function setRecommendationId($id)
+    // {
+        // $this->_recommendation_id = $id;
+    // }
     
     #THIS FUNCTION IS USING FOR CHECK A VALID EMAIL ID.
     public function isEmail() {
@@ -425,6 +430,7 @@ Class Api_model extends CI_Model{
     {
         $this->load->library('encrypt');
         $customer = $this->get_customer_by_email($this->_username);
+        $customer=1;
         if ($customer)
         {
             $this->load->helper('string');
@@ -441,7 +447,8 @@ Class Api_model extends CI_Model{
             $this->email->to($this->_username);
             $this->email->subject('Ziqqi : Password Reset');
             $this->email->message(html_entity_decode($message));
-            $this->email->send();
+            $send=$this->email->send();
+           
             return true;
         }else{
             return false;
@@ -869,7 +876,7 @@ Class Api_model extends CI_Model{
         return $query->row_array();
     }
     
-	function get_wishlistExitProduct()
+	function get_cartExitProduct()
 	{
 		$this->db->select('*');
         $this->db->from('cart');
@@ -994,6 +1001,7 @@ Class Api_model extends CI_Model{
 			$this->db->where('id', $this->_address_id);
 		}
 		$this->db->where('customer_id', $this->_user_id);
+		$this->db->order_by('id','DESC');
 		//$this->db->limit(1,0);
 		$result=$this->db->get();
 		return $result->result_array();
@@ -1271,6 +1279,17 @@ Class Api_model extends CI_Model{
         $count = $this->db->count_all_results();
         return $count;
 	}
+	
+	#THIS FUNCTION IS USING FOR COUNT CART ITEMS.
+	function count_wishlist_item()
+	{
+		$this->db->select('*');
+        $this->db->from('wishlist');
+		$this->db->where('customers_id', $this->_user_id);
+        $count = $this->db->count_all_results();
+        return $count;
+	}
+	
 	#THIS FUNCTION IS USING FOR DETETE WISHLIST PRODUCT.
 	function delete_wishlistProduct(){
 		$this->db->where('customers_id', $this->_user_id);
@@ -1397,6 +1416,42 @@ Class Api_model extends CI_Model{
            // $this->db->last_query();
         }
 	}
+	
+	#THIS FUNCTION IS USING FOR GET BEST preference.
+    function get_preference()
+    {
+        $this->db->select('*');
+        $this->db->from('communication_preferences');
+		$this->db->where('status', 1);
+        $query = $this->db->get();
+        return $query->result_array();   
+    }
+
+	#THIS FUNCTION IS USING FOR UPDATE RECOMMENDATION STATUS.
+	function update_recomdation($data){
+		if($data['id'])
+        {
+            $this->db->where('id', $data['id']);
+            $this->db->update('recommendations', $data);
+            return $data['id'];
+        }else
+        {
+            $this->db->insert('recommendations', $data);
+            $id = $this->db->insert_id();
+            return $id;
+        }
+	}
+	
+	#THIS FUNCTION IS USING FOR RECOMMENDATION.
+	function get_recommendation()
+    {
+        $this->db->select('*');
+        $this->db->from('recommendations');
+        $query = $this->db->get();
+        return $query->result_array();   
+    }
+	
+        
 	#THIS FUNCTION USING FOR GET CUSTOMER FEEDBACKS.
 	// function get_customerFeedbacks(){
 		// $this->db->select('id');

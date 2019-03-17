@@ -454,8 +454,7 @@ class Ziqqi_api extends REST_Controller
         }else
 		{
     		 $mail = $this->Api_model->reset_password();
-    		
-    		
+    
 			if($mail)
 			{
 				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Your password has been sent to your email.'));
@@ -1152,74 +1151,6 @@ class Ziqqi_api extends REST_Controller
 
 
 	#THIS FUNCTION IS USING FOR ADD TO PRODUCTS IN CART.
-	function addTocart_back_post()
-	{
-		$product_id          = $this->post('product_id');
-		$product_variant_id  = $this->post('product_variant_id');
-		$postdata  = array(
-						'product_id'         =>  $product_id,
-						'product_variant_id' =>  $product_variant_id
-						);
-		#decleare variables here.
-		$quantity = 1;
-		if(!empty($this->post('quantity')))
-		{
-			$quantity = $this->post('quantity');
-		}
-		
-		$customer_id='';
-		if(!empty($this->input->post('customer_id')))
-		{
-			$customer_id=$this->input->post('customer_id');
-		}
-		
-		$guestId='';
-		if(!empty($this->input->post('guest_id')))
-		{
-		  $guestId=$this->input->post('guest_id');
-		}
-		
-		$errorStr      = $this->checkRequiredParam($postdata);
-	    if(empty($customer_id) && empty($guestId))
-		{
-			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please enter guest id/customer id','Payload'=>array()));
-		}
-		else if(!empty($errorStr))
-		{
-			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
-		
-		}else{
-		
-			#set data.
-			$this->Api_model->setuserid($customer_id);
-			$this->Api_model->setGuestId($guestId);
-			$this->Api_model->setProductId($product_id);
-			$this->Api_model->setProductVariant($product_variant_id);
-			$this->Api_model->setProductQuantity($quantity);
-			
-			$arrProduct=$this->Api_model->get_productById();
-			if(count($arrProduct)>0)
-			{
-				#add product in cart.
-				$cartResult=$this->Api_model->add_to_cart();
-				
-				#get user cart data.
-				$cartData=$this->Api_model->get_cartProduct();
-				
-				#api response.
-				if($cartResult==true){
-					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to cart','Payload'=>$cartData));
-				}else{
-					$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong','Payload'=>array()));
-				}
-				
-			}else{
-				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'This product not found.','Payload'=>array()));
-			}
-			
-		}
-	}
-
     function addTocart_post()
 	{
 		$product_id          = $this->post('product_id');
@@ -1260,12 +1191,12 @@ class Ziqqi_api extends REST_Controller
 			$this->Api_model->setCartId('');
 			
 			
-	        $wishlistExitProduct=$this->Api_model->get_wishlistExitProduct();
-			if(count($wishlistExitProduct)>0)
+	        $cartExitProduct=$this->Api_model->get_cartExitProduct();
+			if(count($cartExitProduct)>0)
 			{
-				$quantity +=$wishlistExitProduct['qty'];
+				$quantity +=$cartExitProduct['qty'];
 				
-				$this->Api_model->setCartId($wishlistExitProduct['id']);
+				$this->Api_model->setCartId($cartExitProduct['id']);
 			}
 			
 			
@@ -1273,6 +1204,9 @@ class Ziqqi_api extends REST_Controller
 			
 			
 			$arrProduct=$this->Api_model->get_productById();
+			
+			$cart_item=$this->Api_model->count_cart_item();
+			
 			if(count($arrProduct)>0)
 			{
 				#add product in cart.
@@ -1283,7 +1217,7 @@ class Ziqqi_api extends REST_Controller
 				
 				#api response.
 				if($cartResult==true){
-					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to cart','Payload'=>$cartData));
+					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to cart','Payload'=>$cartData,'total_item'=>$cart_item));
 				}else{
 					$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong','Payload'=>array()));
 				}
@@ -1296,120 +1230,8 @@ class Ziqqi_api extends REST_Controller
 	}
 	
 	#THIS FUNCTION IS USING FOR VIEW CART PRODUCT.
-	function viewCartProduct_back_post(){
-	//	$customer_id = $this->post('customer_id');
-	//	$auth_token  = $this->post('auth_token');
-	/*	$postdata    = array( 
-							'customer_id'  =>  $customer_id,
-						//	'auth_token'   =>  $auth_token
-							);
-	
-	    $this->Api_model->setauthtoken($auth_token);
-		$errorStr      = $this->checkRequiredParam($postdata);
-		$productId     = $this->post('product_id');*/
-	//	$checkToken    = $this->Api_model->istokenExists();
-	/*	if(!empty($errorStr))
-		{
-			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
-		
-		}*/
-		
-		$customer_id='';
-		
-		if(!empty($this->input->post('customer_id')))
-		{
-			$customer_id=$this->input->post('customer_id');
-		}
-		
-		$guestId='';
-		if(!empty($this->input->post('guest_id')))
-		{
-		  $guestId=$this->input->post('guest_id');
-		}
-		    if(empty($customer_id) && empty($guestId))
-		{
-			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please enter guest id/customer id','Payload'=>array()));
-		}
-		else{
 
-           /* if($checkToken>0)
-			{*/
-			    #set data.
-			    $this->Api_model->setuserid($customer_id);
-			    $this->Api_model->setGuestId($guestId);
-			
-				#get user cart data.
-				$total      = 0;
-				$sub_total  = 0;
-				$shipping   = 0;
-				$cartData=$this->Api_model->get_cartProduct();
-			
-				if(count($cartData)>0)
-				{
-					foreach($cartData as &$prod)
-					{
-						#set product id and brand id.
-						$this->Api_model->setProductId($prod['id']);
-						$this->Api_model->setBrandId($prod['brand_id']);
-						
-						#get product image.
-						
-						$arrProdImg   = $this->Api_model->get_productImageById();
-					
-						
-						#get brand.
-						$arrProdBrand = $this->Api_model->get_brandById();
-						
-						#get product price.
-						$arrProdPrice = $this->Api_model->get_productPriceById();
-						
-						#get product variant
-						$arrProdcuVarient=$this->Api_model->get_productvariantById();
-						
-
-						$prod['mrp_price']  = "0.00";
-						$prod['sale_price'] = "0.00";
-						if(count($arrProdPrice)>0)
-						{
-							$prod['mrp_price']  = $arrProdPrice['mrp_price'];
-							$prod['sale_price'] = $arrProdPrice['sale_price'];
-							
-						}
-						
-						
-						$total += $prod['sale_price']*$prod['qty'];
-						$prod['image']='';
-						if(count($arrProdImg)>0)
-						{
-							$prod['image']=base_url($arrProdImg[0]['small_image_path']);
-						}
-						$prod['brand_name']='';
-						if(count($arrProdBrand)>0)
-						{
-							$prod['brand_name']=$arrProdBrand['name'];
-						}
-						$prod['product_variant_id']='';
-						if(count($arrProdcuVarient))
-						{
-							$prod['product_variant_id']=$arrProdcuVarient['product_variant_id'];
-						}
-					}
-				}
-			
-				#api response.
-				if(count($cartData)>0){
-					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to cart.','Payload'=>$cartData,'total'=>$total,'sub_total'=>$total,'shipping'=>$shipping));
-				}else{
-					$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'You do not have product in cart.','Payload'=>array()));
-				}
-		/*	}else{
-				$this->response(array('Error'=>false,'Code'=>204,'Status'=>0,'Message' => 'You do not have authentication.','Payload'=>''));
-			}*/
-			
-		}
-	}
-
-    function viewCartProduct_post(){
+ function viewCartProduct_post(){
 
 	    $auth_token  = $this->post('auth_token');
 		$postdata    = array( 'auth_token'   =>  $auth_token );
@@ -1431,6 +1253,7 @@ class Ziqqi_api extends REST_Controller
 
                 $customer      = $this->Api_model->getcustomerid();
 				$customer_id  = $customer['user_id'];
+				
 				#set data.
 				$this->Api_model->setuserid($customer_id);
 			
@@ -1496,7 +1319,7 @@ class Ziqqi_api extends REST_Controller
 			    $cart_item=$this->Api_model->count_cart_item();
 				#api response.
 				if(count($cartData)>0){
-					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to cart.','Payload'=>$cartData,'total'=>$total,'sub_total'=>$total,'shipping'=>$shipping,'total_item'=>$cart_item));
+					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Cart Product is fetched successfully.','Payload'=>$cartData,'total'=>$total,'sub_total'=>$total,'shipping'=>$shipping,'total_item'=>$cart_item));
 				}else{
 					$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'You do not have product in cart.','Payload'=>array()));
 				}
@@ -1568,42 +1391,6 @@ class Ziqqi_api extends REST_Controller
 		return $cartData;
 	}
 	#THIS FUNCTION IS USING FOR DELTE CART PRODUCT.
-	function deleteCartProduct_back_post()
-	{
-			$customer_id='';
-		if(!empty($this->input->post('customer_id')))
-		{
-			$customer_id=$this->input->post('customer_id');
-		}
-		
-		$guestId='';
-		if(!empty($this->input->post('guest_id')))
-		{
-		  $guestId=$this->input->post('guest_id');
-		}
-		    if(empty($customer_id) && empty($guestId))
-		{
-			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please enter guest id/customer id','Payload'=>array()));
-		}
-		else
-		{
-			#set data.
-			$this->Api_model->setuserid($customer_id);
-			$this->Api_model->setGuestId($guestId);
-			$this->Api_model->setProductId($this->post('product_id'));
-			
-			$cartData=$this->Api_model->get_cartProduct();
-			#delete cart product.
-			$result=$this->Api_model->delete_cartProduct();
-			
-			if($result==true)
-			{  
-			  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Cart product is deleted successfully','Payload'=>$cartData));
-			}else{
-				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong.','Payload'=>array()));
-			}
-		}
-	}
 
     function deleteCartProduct_post()
 	{
@@ -1639,10 +1426,12 @@ class Ziqqi_api extends REST_Controller
 			#delete cart product.
 			$result=$this->Api_model->delete_cartProduct();
 			
+			$cart_item=$this->Api_model->count_cart_item();
+			
 			if($result==true)
 			{  
 	
-			  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Cart product is deleted successfully','Payload'=>$cartData));
+			  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Cart product is deleted successfully','Payload'=>$cartData,'total_item'=>$cart_item));
 			}else{
 				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong.','Payload'=>array()));
 			}
@@ -1686,10 +1475,10 @@ class Ziqqi_api extends REST_Controller
 				#get customer bill address.
 				$result =$this->Api_model->get_billingAddress();
 				
-				if(count($result)==0)
+				/*if(count($result)==0)
 				{
 				  $result = $arrCustomer;
-				}
+				}*/
 				
 				#api response.
 				if($result==true)
@@ -1741,13 +1530,13 @@ class Ziqqi_api extends REST_Controller
 			#check customer.
 			if(count($arrCustomer)>0)
 			{
-				#get customer bill address.
+				#get customer shipping address.
 				$result =$this->Api_model->get_shippingAddress();
 				
-				if(count($result)==0)
+				/*if(count($result)==0)
 				{
 				  $result = $arrCustomer;
-				}
+				}*/
 				
 				#api response.
 				if($result==true)
@@ -1769,7 +1558,7 @@ class Ziqqi_api extends REST_Controller
     function addBillingAddress_post(){
 		$auth_token = $this->post('auth_token');
 		$postdata   = array(
-						  'email'                =>  $this->post('email'),
+						  //'email'                =>  $this->post('email'),
 						  'first_name'           =>  $this->post('first_name'),
 						  'last_name'            =>  $this->post('last_name'),
 						  'mobile'               =>  $this->post('mobile'),
@@ -1801,13 +1590,15 @@ class Ziqqi_api extends REST_Controller
 		{
 			$customer    = $this->Api_model->getcustomerid();
 		    $customer_id = $customer['user_id'];
+		  
 			
 			#set data.
 			$this->Api_model->setuserid($customer_id); 
 			$this->Api_model->setfname($this->post('first_name'));
 			$this->Api_model->setlname($this->post('last_name'));
 			$this->Api_model->setphone($this->post('mobile'));
-			$this->Api_model->setuserName($this->post('email'));
+			$this->Api_model->setphone('');
+			$this->Api_model->setuserName('');
 			$this->Api_model->setAddressDetails($this->post('address_details'));
 			$this->Api_model->setCountry($this->post('country'));
 			$this->Api_model->setAddressPrimary($isPrimary);
@@ -1980,7 +1771,7 @@ class Ziqqi_api extends REST_Controller
 				#api response.
 				if($result==true)
 				{  
-				  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Customer billing address added successfully','Payload'=>$result));
+				  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Customer shipping address added successfully','Payload'=>$result));
 				}else{
 				 $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Data not found.','Payload'=>array()));
 				}
@@ -2143,7 +1934,7 @@ class Ziqqi_api extends REST_Controller
 		$postdata      = array(
 							'product_id'         =>  $productId,
 							'auth_token'         =>  $auth_token
-						);
+					     	);
 		
 		$this->Api_model->setauthtoken($auth_token);
 		$errorStr      = $this->checkRequiredParam($postdata);
@@ -2178,6 +1969,8 @@ class Ziqqi_api extends REST_Controller
 					 
 					#get user cart data.
 					$wishlistData=$this->Api_model->get_wishlistProduct();
+					
+					$wishlistItem=$this->Api_model->count_wishlist_item();
 					if($wishlistData)
 					{
 						foreach($wishlistData as &$prod)
@@ -2226,9 +2019,11 @@ class Ziqqi_api extends REST_Controller
 							}
 						}
 					}
+					
+					
 					#api response.
 					if($wishListResult==true){
-						$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to wishlist','Payload'=>$wishlistData));
+						$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to wishlist','Payload'=>$wishlistData,'wishlist_item'=>$wishlistItem));
 					}else{
 						$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong','Payload'=>array()));
 					}
@@ -2269,6 +2064,8 @@ class Ziqqi_api extends REST_Controller
 			#get user cart data.
 		
 			$wishlistData=$this->Api_model->get_wishlistProduct();
+			
+			$wishlistItem=$this->Api_model->count_wishlist_item();
 			
 			if(count($wishlistData)>0)
 			{
@@ -2322,7 +2119,7 @@ class Ziqqi_api extends REST_Controller
 			}
 			#api response.
 			if(count($wishlistData)>0){
-				$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Wishlist successfully sent','Payload'=>$wishlistData));
+				$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Wishlist product is feched successfully.','Payload'=>$wishlistData,'wishlist_item'=>$wishlistItem));
 			}else{
 				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'No Product in the wishlist','Payload'=>array()));
 			}
@@ -2365,9 +2162,11 @@ class Ziqqi_api extends REST_Controller
 			#delete cart product.
 			$result=$this->Api_model->delete_wishlistProduct();
 			
+			$wishlistItem=$this->Api_model->count_wishlist_item();
+			
 			if($result==true)
 			{  
-		      $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Wishlist product is deleted successfully','Payload'=>array()));
+		      $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Wishlist product is deleted successfully','Payload'=>array(),'wishlist_item'=>$wishlistItem));
 			}else{
 				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong.','Payload'=>array()));
 			}
@@ -2393,16 +2192,12 @@ class Ziqqi_api extends REST_Controller
 		$config['newline'] = "\r\n";
 
 		$ci->email->initialize($config);
-		
-		$data['msg']=$bodymsg;
 
 		$ci->email->from('info@ziqqi.com', 'Ziqqi');
 		$ci->email->to($email);
 		$this->email->reply_to('ajathtesting@gmail.com', 'Explendid Videos');
 		$ci->email->subject($subject);
-		$msg = $this->load->view('otp_mail.php',$data,TRUE);
-        $this->email->message($msg);   
-	
+		$ci->email->message($bodymsg);
 		$ci->email->send();
 		$success = 'success';
 		return $success;
@@ -2727,8 +2522,40 @@ class Ziqqi_api extends REST_Controller
 			if(count($arrCustomer)>0)
 			{
 				#get customer orders.
+				
 			    $arrOrders  =  $this->Api_model->get_customerOrders();
 				
+				if(count($arrOrders)>0)
+				{
+					foreach($arrOrders as &$ord)
+					{
+						$this->Api_model->setProductId($ord['product_id']);
+						
+						$arrProducts=$this->Api_model->get_productById();
+						$this->Api_model->setBrandId($arrProducts['brand_id']);
+						
+						#get product image.
+						$arrProdImg   = $this->Api_model->get_productImageById();
+							
+						#get brand.
+						$arrProdBrand = $this->Api_model->get_brandById();
+							
+						$ord['product_image']='';
+						if(count($arrProdImg)>0)
+						{
+							$ord['product_image']=base_url($arrProdImg[0]['small_image_path']);
+						}
+						$ord['brand_name']='';
+						if(count($arrProdBrand)>0)
+						{
+							$ord['brand_name']=$arrProdBrand['name'];
+						}
+						
+
+					}
+					
+				}
+			
 				#api response.
 				if($arrOrders==true)
 				{  
@@ -3007,10 +2834,14 @@ class Ziqqi_api extends REST_Controller
 					$this->Api_model->setorderid($order_id); 
 				
 					$arrOrders  =  $this->Api_model->get_orderDetails();
-				
-					
-					$this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Order placed successfully','Payload'=>$arrOrders));
-				
+					if(count($arrOrders)>0)
+					{
+					    $this->Api_model->delete_cartProduct();
+					    $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Order placed successfully','Payload'=>$arrOrders));
+					}else{
+					    $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' =>'Order not found.','Payload'=>array()));
+					}
+				                 
 				}else{
 					 $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' =>'Cart is empty.','Payload'=>array()));
 				}
@@ -3021,5 +2852,62 @@ class Ziqqi_api extends REST_Controller
 			}
 	    }
 	}
-	 
+	
+	#THIS FUNCTION IS USING FOR GET COMMUNICATION PREFERENCE.
+	function getPreference_get()
+	{
+		
+		$arrpreference = $this->Api_model->get_preference();
+		
+		#API response.
+		if(!empty($arrpreference))
+		{
+			 $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Data fetched successfully','Payload'=>$arrpreference));
+			$this->response($response);
+		}else
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'data not found.','Payload'=>array()));
+			
+	    }
+	}
+	
+	#THIS FUNCTION IS USING FOR GET RECOMMENDATION.
+	function changeRecommendation_post()
+	{
+		
+		$recommendation_id     = $this->post('recommendation_id');
+		$status                = $this->post('status');
+		$postdata              = array('recommendation_id'  =>  $recommendation_id);
+		
+	    #check mandatory fields.
+		$errorStr      = $this->checkRequiredParam($postdata);
+		
+		if(!empty($errorStr))
+		{
+            $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
+		}
+		else
+		{
+			#set data.
+			$update['id']      = $recommendation_id;
+			$update['status']  = $status;
+		    //$this->Api_model->setRecommendationId($recommendation_id); 
+			$this->Api_model->update_recomdation($update);
+			$arrRecommendation = $this->Api_model->get_recommendation();
+	
+	        #api response.
+			if(count($arrRecommendation)>0)
+			{
+				  
+                $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Data fetched successfully','Payload'=>$arrRecommendation));
+				
+			}
+			else
+			{
+				#data not found.
+				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'data not found.','Payload'=>array()));
+			}
+	    }
+	}
+	
 }
