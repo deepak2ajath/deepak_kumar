@@ -270,11 +270,27 @@ Class Api_model extends CI_Model{
     {
         $this->_cart_id = $id;
     }
-	#Set cart id.
-    // public function setRecommendationId($id)
-    // {
-        // $this->_recommendation_id = $id;
-    // }
+    
+    #set country id.
+    public function setcountryid($id) {
+        $this->_country_id = $id;
+    }
+	
+	#set state id.
+    public function setstateid($id) {
+        $this->_state_id = $id;
+    }
+    
+    #set otp method.
+    public function setotpmethod($method) {
+        $this->_otp_method = $method;
+    }
+    
+    #set otp method.
+    public function setnewpassword($pass) {
+        $this->_new_password = $pass;
+    }
+    
     
     #THIS FUNCTION IS USING FOR CHECK A VALID EMAIL ID.
     public function isEmail() {
@@ -366,7 +382,7 @@ Class Api_model extends CI_Model{
     #get customer details
     function get_customer()
     {
-        $this->db->select('*');
+        $this->db->select('id,first_name,last_name,gender,email,phone_code,mobile,is_active');
         $this->db->from('customers');
         $this->db->where('id', $this->_user_id);
         $query = $this->db->get();
@@ -381,10 +397,23 @@ Class Api_model extends CI_Model{
         $where = '(email="'.$this->_username.'" OR mobile = "'.$this->_username.'")';
         $this->db->where($where); 
         $this->db->where('password', sha1($this->_password));
-        $this->db->where('is_active', 1);
+        //$this->db->where('is_active', 1);
         $query = $this->db->get();
        // $sql = $this->db->last_query();
-        return $query->row_array();
+        $result=$query->row_array();
+       
+		if(count($result)>0)
+		{
+			if($result['is_active']==1)
+			{
+				return $result;
+			}else{
+				return $result['id'].'#&#'.$result['first_name'].'#&#'.$result['mobile'].'#&#'.$result['phone_code'].'#&#'.$result['email'];
+			}
+			
+		}else{
+			return false;
+		}
     }
     
     #THIS FUNCTION IS USING FOR GET CUSTOMER BY EMAIL.
@@ -428,30 +457,79 @@ Class Api_model extends CI_Model{
     #THIS FUNCTION IS USING FOR RESET PASSWORD.
     function reset_password()
     {
-        $this->load->library('encrypt');
-        $customer = $this->get_customer_by_email($this->_username);
-        $customer=1;
-        if ($customer)
-        {
-            $this->load->helper('string');
+        
             $this->load->library('email');
-            $config['mailtype'] = 'html';       
-            $this->email->initialize($config);
+			$mail_config['smtp_host'] = 'smtp.gmail.com';
+            $mail_config['smtp_port'] = '587';
+            $mail_config['smtp_user'] = 'ajathtesting@gmail.com';
+            $mail_config['_smtp_auth'] = TRUE;
+            $mail_config['smtp_pass'] = 'nisar@12345';
+            $mail_config['smtp_crypto'] = 'tls';
+            $mail_config['protocol'] = 'smtp';
+            $mail_config['mailtype'] = 'html';
+            $mail_config['send_multipart'] = FALSE;
+            $mail_config['charset'] = 'utf-8';
+            $mail_config['wordwrap'] = TRUE;
+            $this->email->initialize($mail_config);
             
-            $new_password       = random_string('alnum', 8);
-            $sql = "update customers set password='".sha1($new_password)."', password_reset_date='".date('Y-m-d')."' WHERE email='".$this->_username."' LIMIT 1";
-            $this->db->query($sql);
-                        
-            $message = '<p>Your new password is :<br>'.$new_password.'<br/><br/><br/>From<br/>Team Ziqqi</p>';
-            $this->email->from("support@ziqqi.com", "Ziqqi");
-            $this->email->to($this->_username);
-            $this->email->subject('Ziqqi : Password Reset');
-            $this->email->message(html_entity_decode($message));
-            $send=$this->email->send();
+            $this->email->set_newline("\r\n");
            
+				//Load email library
+		
+        //$this->load->library('encrypt');
+        $customer = $this->get_customer_by_email($this->_username);
+        //$customer=1;
+        if(count($customer)>0)
+        {
+    
+           if(empty($this->_new_password))
+           {
+               
+               $new_password     = random_string('alnum', 8);
+				$sql = "update customers set otp_verification='".$new_password."', password_reset_date='".date('Y-m-d')."' WHERE email='".$this->_username."' LIMIT 1";
+				$this->db->query($sql);
+			
+				if($this->_otp_method==1)
+				{
+					//$this->sendBSms($customer['mobile'],'<p>Your new password is :<br>'.$new_password.'<br/><br/><br/>From<br/>Team Ziqqi</p>');
+					$verification_msg='Your verification code is : '.$new_password;
+			 	    $phone='00'.$customer['phone_code'].$customer['mobile'];
+					 $sendMob=$this->sendBSms($phone,$customer['phone_code'],$verification_msg);
+					 
+				}else{
+					$to = $this->_username;
+					$subject = 'Ziqqi : Password Reset';
+					$message = '<p>Your vefication code  is :<br>'.$new_password.'<br/><br/><br/>From<br/>Team Ziqqi</p>';
+					// Always set content-type when sending HTML email
+					$headers = "MIME-Version: 1.0" . "\r\n";
+					$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+					// More headers
+					$headers .= 'From: <info@idukaan.ae>' . "\r\n";
+					$headers .= 'Cc: info@idukaan.ae' . "\r\n";
+					$send=mail($to,$subject,$message,$headers);
+				}
+               
+           }else{
+                if($this->_otp == $customer['otp_verification'])
+                {
+                    $sql = "update customers set password='".sha1($this->_new_password.HASHTOKEN)."', password_reset_date='".date('Y-m-d')."' WHERE email='".$this->_username."' LIMIT 1";
+				       $this->db->query($sql);
+				       return 'password_changed';
+				       exit;
+				       
+                }else{
+                    return 'otp_missmatched';
+                    exit;
+                }
+               
+           }
+		        
             return true;
+            exit;
         }else{
             return false;
+            exit;
         }
     }
     
@@ -513,14 +591,27 @@ Class Api_model extends CI_Model{
         else if(!empty($subcatId))
         {
             $this->db->where('parent_category_id', $subcatId);  
+            $this->db->where('menu_display', 0);
+           
         }else{
-            $this->db->where('menu_display', 1);
-            $this->db->where('parent_category_id', 0);  
+           $this->db->where('parent_category_id', 0);
+		   $this->db->where('menu_display', 1);	
+		  
+           
         }
         
+        
         $this->db->where('is_active', 1);
-        $this->db->order_by('id', 'ASC');
-        $this->db->limit(9, 0);
+        if($subcatId==6)
+        {
+             $this->db->order_by('display_order', 'ASC');
+        }else{
+             $this->db->order_by('id', 'ASC');
+        }
+        
+       
+        
+        $this->db->limit(10, 0);
         $query = $this->db->get();
         return $query->result_array();
         //$this->db->last_query();
@@ -550,6 +641,43 @@ Class Api_model extends CI_Model{
         return $products;   
     }
     
+    #THIS FUNCTION IS USING FOR GET CATEGORIES PRODUCTS.
+	function get_subcategoryproduct($catId){
+		$this->db->select('*');
+        $this->db->from('product_categories');
+        $this->db->where_in('categories_id', $catId);
+		$query = $this->db->get();
+		$arrCat= $query->result_array();
+		// echo "<pre>";
+		// print_r($arrCat);
+		// exit;
+		$product=array();
+		if(count($arrCat)>0)
+		{
+			foreach($arrCat as $cat)
+			{
+				
+				$this->db->select('id as product_id,product_type,name,ref_no as sku,quantity,sale_price,mrp_price,brand_id,supplier_id,linkhref,small_desc,display_order,is_active,is_bestseller');
+				$this->db->from('product');
+				$this->db->where('id', $cat['product_id']);
+				//$this->db->where('is_bestseller', 1);
+                $this->db->where('is_active', 1);
+				$query = $this->db->get();
+				$arrProd= $query->row_array();
+				if(count($arrProd)>0)
+				{
+					if(count($product)<6)
+					{
+						$product[]=$arrProd;
+					}
+					
+				}
+				
+			}
+		}
+		return $product;
+		//return $this->db->last_query();
+	}
     #THIS FUNCTION IS USING FOR GET BEST SELLER PRODUCTS.
     function get_productBycatId($catId,$start,$limit)
     {
@@ -739,11 +867,13 @@ Class Api_model extends CI_Model{
         $this->db->where('user_id', $this->_user_id);
         $query = $this->db->get();
         $rows= $query->row_array();
+       
           $data = array(
             'user_id'      => $this->_user_id,
             'otp'    => $this->_otp
         );
         if(!empty($rows)){
+        $data['id']=$rows['id'];
          $this->db->where('id', $data['id']);
         $this->db->update('customer_otp', $data);
         }else{
@@ -762,6 +892,7 @@ Class Api_model extends CI_Model{
 		
         $query  = $this->db->get();
         $rows   = $query->row_array();
+        
           $data = array(
             'user_id'       => $this->_user_id,
             'auth_token'    => $uniqueid
@@ -892,14 +1023,15 @@ Class Api_model extends CI_Model{
         $this->db->select('product.id,product.product_type,product.name,product.quantity,product.sale_price,product.mrp_price,product.brand_id,product.supplier_id,product.linkhref,product.small_desc,product.display_order,product.is_active,product.is_bestseller,cart.customer_id,cart.qty,cart.guest_id');
         $this->db->from('cart');
         $this->db->join('product', 'product.id=cart.product_id','left');
-        if(!empty($this->_product_id))
+        if(!empty($this->_product_id) && empty($this->_user_id))
         {
              $this->db->where('product.id', $this->_product_id);
         }
          $this->db->where('cart.customer_id', $this->_user_id);
         
         $result=$this->db->get();
-        return $result->result_array();
+         return $result->result_array();
+       
         
     
     }
@@ -919,16 +1051,27 @@ Class Api_model extends CI_Model{
     
     #THIS FUNCTION IS USING FOR DETETE CART PRODUCT.
     function delete_cartProduct(){
-          if(!empty($this->_user_id))
-        {
-            $this->db->where('cart.customer_id', $this->_user_id);
-        }else{
-            $this->db->where('cart.guest_id', $this->_guest_id);
-        }
-        if($this->_product_id)
+        if(!empty($this->_product_id) && empty($this->_user_id))
         {
             $this->db->where('product_id', $this->_product_id);
+        }else if(!empty($this->_product_id) && !empty($this->_user_id)){
+            
+            $this->db->where('product_id', $this->_product_id);
+            $this->db->where('cart.customer_id', $this->_user_id);
         }
+        else
+        {
+            $this->db->where('cart.customer_id', $this->_user_id);
+           
+        }
+        $this->db->delete('cart');
+        return true;
+    }
+    
+    #THIS FUNCTION IS USING FOR DELETE USER CART PRODUCT.
+     function delete_customer_cart(){
+        
+        $this->db->where('cart.customer_id', $this->_user_id);
         $this->db->delete('cart');
         return true;
     }
@@ -1004,7 +1147,7 @@ Class Api_model extends CI_Model{
 		$this->db->order_by('id','DESC');
 		//$this->db->limit(1,0);
 		$result=$this->db->get();
-		return $result->result_array();
+		return $result->row_array();
 	}
 	
 	#THIS FUNCTION IS USING FOR GET CUSTOMER BILL ADDRESS.
@@ -1022,7 +1165,7 @@ Class Api_model extends CI_Model{
 		$this->db->where('customer_id', $this->_user_id);
 		//$this->db->limit(1,0);
 		$result=$this->db->get();
-		return $result->result_array();
+		return $result->row_array();
 	}
 	
 	#THIS FUNCTION IS USING FOR SAVE CUSTOMER ADDRESS.
@@ -1046,7 +1189,8 @@ Class Api_model extends CI_Model{
 			'phoneprovider'        => $this->_customer_phoneprovider, 
 			'pay_mobile'           => $this->_customer_pay_mobile, 
 			'address_details'      => $this->_customer_address_deatails, 
-			'is_primary'           => $this->_is_primary       
+			'location'             => $this->_customer_location, 
+			'is_primary'           => $this->_is_primary      
         );
         
         if ($data['id'])
@@ -1311,7 +1455,7 @@ Class Api_model extends CI_Model{
 		return $result->row_array();
 	}
 	
-		function getcategoryimage($subcatId)
+	function getcategoryimage($subcatId)
 	{
 		$this->db->select('category_image');
 		$this->db->from('category_images');
@@ -1346,7 +1490,7 @@ Class Api_model extends CI_Model{
 	#THIS FUNCTION IS USING FOR GET CUSTOMER ORDERS.
 	function get_customerOrders()
     {
-        $this->db->select('orders.id,orders.order_datetime,orders.customers_id,orders.total_amount,orders.shipping_amount,orders.discount_amount,orders.grand_total,order_item.orders_id,order_item.product_id,order_item.product_name,order_item.price,order_item.qty');
+        $this->db->select('orders.id,orders.order_datetime,orders.customers_id,orders.total_amount,orders.shipping_amount,orders.discount_amount,orders.grand_total,orders.payment_gateway,orders.status,order_item.orders_id,order_item.product_id,order_item.product_name,order_item.price,order_item.qty');
         $this->db->from('orders');
         $this->db->join('order_item', 'orders.id = order_item.orders_id','INNER');
         $this->db->where('orders.customers_id', $this->_user_id);
@@ -1357,12 +1501,12 @@ Class Api_model extends CI_Model{
 	#THIS FUNCTION IS USING FOR GET CUSTOMER ORDERS.
 	function get_orderDetails()
     {
-        $this->db->select('orders.id,orders.order_datetime,orders.customers_id,orders.total_amount,orders.shipping_amount,orders.discount_amount,orders.grand_total,orders.baddress1,orders.bcity,orders.payment_gateway,orders.status,order_item.orders_id,order_item.product_id,order_item.product_name,order_item.price,order_item.qty');
+        $this->db->select('orders.id,orders.order_datetime,orders.customers_id,orders.total_amount,orders.shipping_amount,orders.discount_amount,orders.grand_total,orders.sls_grand_total,orders.baddress1,orders.bcity,orders.payment_gateway,orders.status,order_item.orders_id,order_item.product_id,order_item.product_name,order_item.price,order_item.qty');
         $this->db->from('orders');
         $this->db->join('order_item', 'orders.id = order_item.orders_id','INNER');
         $this->db->where('orders.id', $this->_order_id);
         $query = $this->db->get();
-        return$query->result_array();
+        return $query->result_array();
         //$this->db->last_query();
     }
 	
@@ -1426,8 +1570,7 @@ Class Api_model extends CI_Model{
         $query = $this->db->get();
         return $query->result_array();   
     }
-
-	#THIS FUNCTION IS USING FOR UPDATE RECOMMENDATION STATUS.
+	
 	function update_recomdation($data){
 		if($data['id'])
         {
@@ -1442,7 +1585,6 @@ Class Api_model extends CI_Model{
         }
 	}
 	
-	#THIS FUNCTION IS USING FOR RECOMMENDATION.
 	function get_recommendation()
     {
         $this->db->select('*');
@@ -1450,8 +1592,6 @@ Class Api_model extends CI_Model{
         $query = $this->db->get();
         return $query->result_array();   
     }
-	
-        
 	#THIS FUNCTION USING FOR GET CUSTOMER FEEDBACKS.
 	// function get_customerFeedbacks(){
 		// $this->db->select('id');
@@ -1461,5 +1601,92 @@ Class Api_model extends CI_Model{
         // $rows= $query->row_array();
 		// return $rows;
 	// }
+	
+	#THIS FUNCTION IS USING FOR UPDATE USER PROFILE.
+	function upadate_profile()
+    {
+        $id = $this->_user_id;
+        $data = array(
+            'first_name'           => $this->_fname,
+            'last_name'            => $this->_lname,
+            'phone_code'           => $this->_phonecode,
+            'gender'               => $this->_user_gender
+        );
+        $this->db->where('id', $id);
+        $this->db->update('customers', $data);
+        return $id;
+    }
+	
+	#THIS FUNCTION IS USING FOR GET COUNTARY.
+    function  get_country()
+	{
+		$this->db->select('*');
+        $this->db->from('country');
+        $query = $this->db->get();
+        return $query->result_array(); 
+	}
+	
+	#THIS FUNCTION IS USING FOR GET STATE.
+    function  get_state()
+	{
+		$this->db->select('*');
+        $this->db->from('states');
+		$this->db->where('country_id', $this->_country_id);
+        $query = $this->db->get();
+        return $query->result_array(); 
+	}
+	
+	#THIS FUNCTION IS USING FOR GET CITY.
+    function get_city()
+	{
+		$this->db->select('*');
+        $this->db->from('cities');
+		$this->db->where('state_id', $this->_state_id);
+        $query = $this->db->get();
+        return $query->result_array(); 
+	}
+	
+	#THIS FUNCTION IS USING GET ORDER STATUS.
+	function get_orderStatus()
+	{
+		$this->db->select('*');
+        $this->db->from('order_history');
+		$this->db->where('orders_id', $this->_order_id);
+		$this->db->order_by('id', 'DESC');
+        $query = $this->db->get();
+        return $query->row_array(); 
+	}
+
+    #THIS FUNCTION IS USING FOR GET USD TO SLS VALUE.
+    function get_usd_to_sls()
+	{
+		$this->db->select('*');
+        $this->db->from('site_setting');
+		$this->db->where('name', 'usd_to_sls_conversion_rate');
+        $query = $this->db->get();
+        return $query->row_array(); 
+	}
+	
+	function sendBSms($mobileno,$code,$message)
+    {
+        $message = urlencode($message);
+         $url ="https://esahal.com/idukaan2333/sms.php?acct=idukaan2333&user=idukaanzqi&password=ZvaRnmiC3c&ref=".$code."&to=".$mobileno."&msg=".$message;
+ 
+            //https://esahal.com/idukaan2333/sms.php?acct=idukaan2333&user=idukaanzqi&password=ZvaRnmiC3c&ref=123456&to=971551227712&msg=test
+            // create a new cURL resource
+            $ch = curl_init();
+            
+            // set URL and other appropriate options
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+           // curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1);
+           curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+            // grab URL and pass it to the browser
+            curl_exec($ch);
+            
+            // close cURL resource, and free up system resources
+            curl_close($ch);
+    }
 	
 }

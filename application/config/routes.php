@@ -84,6 +84,10 @@ $route['getorderDetails']	         = 'Ziqqi_api/getorderDetails';
 $route['getHelpCenters']	         = 'Ziqqi_api/getHelpCenters';
 $route['getHelpCenterById']	         = 'Ziqqi_api/getHelpCenterById';
 $route['placeOrder']	             = 'Ziqqi_api/placeOrder';
+$route['updateCustomerProfile']	     = 'Ziqqi_api/updateCustomerProfile';
+$route['country_master']	         = 'Ziqqi_api/country_master';
+$route['getState']	                 = 'Ziqqi_api/getState';
+$route['getCity']	                 = 'Ziqqi_api/getCity';
 
 
 $route['default_controller'] = 'Ziqqi_api';

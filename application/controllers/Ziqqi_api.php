@@ -77,6 +77,7 @@ class Ziqqi_api extends REST_Controller
 		$email        =  $this->post('email');
 		$name         =  $this->post('fname');
 		$contact_num  =  $this->post('phone');
+		$phonecode    =  $this->post('phonecode');
 	
 
 		#input fields validation.
@@ -110,8 +111,12 @@ class Ziqqi_api extends REST_Controller
 			Team Ziqqi';
 			$subject = 'Ziqqi - Otp Verification';
             #$statussms = $this->SendsmsOtp($OTP,$email,$contact_num,$name,$bodymsg);
+
+           $otp_msg='OTP is :'.$OTP;
+            $this->phone_otp('00'.$phonecode.$contact_num,$phonecode,$otp_msg);
+            $statusmail = $this->email_otp($OTP,$email,$contact_num,$name,$bodymsg,$subject);
             
-            $statusmail = $this->SendmailOtp($OTP,$email,$contact_num,$name,$bodymsg,$subject);
+            
             if(!empty($statusmail)){
             $this->Api_model->setuserid($newuserid);
             $this->Api_model->setotp($OTP);
@@ -136,8 +141,7 @@ class Ziqqi_api extends REST_Controller
 				$authtoken   = $this->Api_model->authtoken();
 			}
 			$customer->auth_token=$authtoken;
-			
-			
+		
 			if(!empty($newuserid))
 			{
                 $this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'registered successfully.','Payload'=>$customer,'otpdetails'=>$otdetails));				
@@ -219,6 +223,7 @@ class Ziqqi_api extends REST_Controller
 		$name         =  $this->post('fname');
 		//$contact_num  =  $this->post('phone');
 		$errorStr     =  $this->checkRequiredParam($postdata);
+		$device_type=$this->post('device_type');
 		
 		#check mandatory field validation.
 		if($errorStr)
@@ -314,9 +319,10 @@ class Ziqqi_api extends REST_Controller
 		
 			if(!$flag)
 			{
-		
+	
 			
-			    $customer_id = $this->Api_model->save();
+			   $customer_id = $this->Api_model->save();
+			 
 			  
 			    $this->Api_model->setuserid($customer_id);
 				
@@ -338,23 +344,24 @@ class Ziqqi_api extends REST_Controller
 				#get customer details
 			
 				$customerData3	= $this->Api_model->get_customer();
+			
 		
 				$this->Api_model->setDeviceId($this->post('device_id'));
 				$this->Api_model->setDeviceType($this->post('device_type'));
 				$this->Api_model->save_deviceDetails();
 				
 				$customerDevice = $this->Api_model->get_deciceDetailsByUserId();
-        			
+        		
         			#get user authtoken.
         			
         			if($device_type != $customerDevice['device_type'])
         			{
         				$authtoken   = $this->Api_model->updateAuthToken();
         			}else{
-        				$authtoken   = $this->Api_model->authtoken();
+        			$authtoken   = $this->Api_model->authtoken();
         			}
-					
-					$customerData3['auth_token']  = $authtoken;
+        			
+					$customerData3->auth_token  = $authtoken;
 				
 				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Login successfully.','Payload'=>$customerData3));
 			}
@@ -391,45 +398,78 @@ class Ziqqi_api extends REST_Controller
 			#check customer by their username and password.
             $customer=$this->Api_model->customer_login();
           
-			#set customer id.
-			$this->Api_model->setuserid($customer['id']);
-			
-			$customerDevice = $this->Api_model->get_deciceDetailsByUserId();
-			
-			#get user authtoken.
-			
-			if($device_type != $customerDevice['device_type'])
+            
+            if(is_array($customer))
 			{
-				$authtoken   = $this->Api_model->updateAuthToken();
-			}else{
-				$authtoken   = $this->Api_model->authtoken();
-			}
-		
-			#set customer device data.
-			$this->Api_model->setDeviceId($device_id);
-			$this->Api_model->setDeviceType($device_type);
-			
-			#save customer device details.
-		    $this->Api_model->save_deviceDetails();
-           
-			#get customer device details.
-			$customerdetails = array(
-			                    'id'          =>   $customer['id'],
-								'first_name'  =>   $customer['first_name'],
-								'last_name'   =>   $customer['last_name'],
-								'gender'      =>   $customer['gender'],
-								'email'       =>   $customer['email'],
-								'mobile'      =>   $customer['mobile'],
-								'auth_token'  =>   $authtoken
-								);
-			if(count($customer))
-			{
-				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Login successfully.','Payload'=>$customerdetails));
-				#200 being the HTTP response code   
+          
+    			#set customer id.
+    			$this->Api_model->setuserid($customer['id']);
+    			
+    			$customerDevice = $this->Api_model->get_deciceDetailsByUserId();
+    			#get user authtoken.
+    			if($device_type != $customerDevice['device_type'])
+    			{
+    				$authtoken   = $this->Api_model->updateAuthToken();
+    			}else{
+    				$authtoken   = $this->Api_model->authtoken();
+    			}
+    		
+    			#set customer device data.
+    			$this->Api_model->setDeviceId($device_id);
+    			$this->Api_model->setDeviceType($device_type);
+    			
+    			#save customer device details.
+    		    $this->Api_model->save_deviceDetails();
+               
+    			#get customer device details.
+    			$customerdetails = array(
+    			                    'id'          =>   $customer['id'],
+    								'first_name'  =>   $customer['first_name'],
+    								'last_name'   =>   $customer['last_name'],
+    								'gender'      =>   $customer['gender'],
+    								'email'       =>   $customer['email'],
+    								'mobile'      =>   $customer['mobile'],
+    								'auth_token'  =>   $authtoken
+    								);
+    		
+    				$this->response(array('Error'=>false,'Status'=>1,'Code'=>200,'Message' => 'Login successfully.','Payload'=>$customerdetails));
+    				#200 being the HTTP response code   
             }
+            else if($customer ==true)
+			{
+			 
+			  $arrCustomer   = explode("#&#",$customer);
+			 
+			  $customer_id   = $arrCustomer[0];
+			  $name          = $arrCustomer[1];
+			  $contact_num   = $arrCustomer[2];
+			  $phonecode     = $arrCustomer[3];
+			  $email         = $arrCustomer[4];
+			  
+			 
+			 
+			 $OTP       = rand(1000, 9999);
+			$bodymsg   = 'Thank you for registering with Ziqqi. To get started kindly enter otp ' . $OTP . '.
+			Regards, 
+			Team Ziqqi';
+			$subject = 'Ziqqi - Otp Verification';
+            #$statussms = $this->SendsmsOtp($OTP,$email,$contact_num,$name,$bodymsg);
+
+           
+            $this->phone_otp('00'.$phonecode.$contact_num,$phonecode,$OTP);
+            $statusmail = $this->email_otp($OTP,$email,$contact_num,$name,$bodymsg,$subject);
+            if(!empty($statusmail)){
+                $this->Api_model->setuserid($customer_id);
+                $this->Api_model->setotp($OTP);
+                $result = $this->Api_model->insertotp();
+            }
+            
+             $otpdetails=array('customer_id'=>$customer_id,'otp'=>$OTP);
+				$this->response(array('Error'=>true,'Status'=>0,'Code'=>203,'Message' => 'Customer is not activated.','Payload'=>$otpdetails));
+			}
 			else
 			{
-				$this->response(array('Error'=>true,'Status'=>0,'Message' => 'Please enter valid email and password.'));
+				$this->response(array('Error'=>true,'Status'=>0,'Code'=>204,'Message' => 'Please enter valid username and password.'));
             }  
         }
     }   
@@ -437,7 +477,21 @@ class Ziqqi_api extends REST_Controller
 	#THIS FUNCTION IS USING FOR FORGOT PASSWORD.
 	function forgot_password_post()
 	{
-	    $email     =  $this->input->post('email');
+	  
+	    $email          =  $this->input->post('email');
+	    $otp_method     = 0;
+	    $msg='Your verification code has been sent to your email.';
+		if(!empty($this->input->post('otp_method')))
+		{
+			$otp_method = $this->input->post('otp_method');
+			 $msg='Your verification code has been sent to your phome.';
+		}
+	
+		$this->Api_model->setotpmethod($otp_method);
+		$this->Api_model->setnewpassword($this->input->post('new_password'));
+		$this->Api_model->setotp($this->input->post('otp'));
+		
+		
 	    $postdata  =  array('email' => $email);
 		
 		#check mandatory input fields.
@@ -453,12 +507,25 @@ class Ziqqi_api extends REST_Controller
 			$this->response(array('Error'=>true,'Status'=>0,'Message' => 'Email id is not registered.'));
         }else
 		{
-    		 $mail = $this->Api_model->reset_password();
-    
-			if($mail)
+    	   $mail = $this->Api_model->reset_password();
+    	  
+    	  
+    	    
+    	    if($mail == 1)
 			{
-				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Your password has been sent to your email.'));
+				//$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Your password has been sent to your email.'));
+				
+				$this->response(array('Error'=>false,'Status'=>1,'Message' => $msg));
 			}
+    	   if($mail=='otp_missmatched')
+    	   {
+    	       
+    	       $this->response(array('Error'=>false,'Status'=>1,'Message' => 'OTP does not match.'));
+    	   }else if($mail=='password_changed'){
+    	       
+    	       $this->response(array('Error'=>false,'Status'=>1,'Message' => 'Your password has been changed successfully.'));
+    	   }
+			
 			else
 			{
 				$this->response(array('Error'=>true,'Status'=>0,'Message' => 'Internal Error, Please try again.'));
@@ -530,24 +597,28 @@ class Ziqqi_api extends REST_Controller
 
 	 	$customer_id = $this->input->post('customer_id');
 	 	$otp         = $this->input->post('otp');
-	//	$auth_token  = $this->input->post('auth_token');
+	  // $auth_token  = $this->input->post('auth_token');
 		
 	 	$postdata  =  array( 
 					'customer_id' => $customer_id,
-					'otp'         => $otp
-				//	'auth_token'  => $auth_token
+					'otp'         => $otp,
+					//'auth_token'  => $auth_token
 					);
 	 	$errorStr  =  $this->checkRequiredParam($postdata);
 		$this->Api_model->setauthtoken($auth_token);
-	//	$checkToken=$this->Api_model->istokenExists();
+		$checkToken=$this->Api_model->istokenExists();
 	 	if($errorStr)
 		{
 			$this->response(array('Error'=>true,'Code'=>200,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
 		
-		}/*else if($checkToken == 0)
+		}
+		
+		/*else if($checkToken == 0)
 		{
 			$this->response(array('Error'=>false,'Code'=>204,'Status'=>0,'Message' => 'You do not have authentication.','Payload'=>''));
-		}*/else{
+		}*/
+		
+		else{
 			$this->Api_model->setuserid($customer_id);
 			$result = $this->Api_model->checkexistinguserbyid();
 				if($result)
@@ -566,7 +637,7 @@ class Ziqqi_api extends REST_Controller
 					    $subject     = 'Ziqqi - Login Mail';
 					   // $statussms = $this->SendsmsOtp($otp,$email,$contact_num,$name,$bodymsg);
 				
-						$statusmail      = $this->SendmailOtp($otp,$email,$contact_num,$name,$bodymsg,$subject);
+						$statusmail      = $this->email_otp($otp,$email,$contact_num,$name,$bodymsg,$subject);
 						if ($statusmail) 
 						{
 							$authtoken   =  $this->Api_model->authtoken();
@@ -583,7 +654,7 @@ class Ziqqi_api extends REST_Controller
 						 $payload         = array($customerdetails);
 						 $this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Thankyou customer has been verified.','Payload'=>$payload));		
 					}else{
-						$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'otp not sent.','Payload'=>array()));
+						$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please enter correct otp.','Payload'=>array()));
 					}  
 				}else{
 				 $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Customer not exist.','Payload'=>array()));
@@ -661,7 +732,7 @@ class Ziqqi_api extends REST_Controller
 		    foreach($arrBanner as $element){
 		    $homebanner[] = array( "id"=> $element['id'],
             "alt"=> $element['alt'],
-            "image_path"=> base_url().$element['mobile_image_path'],
+            "image_path"=> PRODUCT_IMAGE.$element['image_path'],
             "link"=> $element['link'],
             "display_order"=> $element['display_banner']);
 		    
@@ -683,6 +754,7 @@ class Ziqqi_api extends REST_Controller
 		
 		#get category.
 	    $arrCategories = $this->Api_model->homeCategory($catId=false, $subcatId);
+	  
 		$arrProducts   = array();
 		if(count($arrCategories)>0)
 		{
@@ -690,7 +762,22 @@ class Ziqqi_api extends REST_Controller
 			{
 			/*	if($value['parent_category_id'] !=0)
 				{*/
-					$arrProducts=$this->Api_model->get_bestSellerProductBycatId($value['id']);
+					$arrsubcatg = $this->Api_model->homeCategory($catId=false, $value['id']);
+				
+					$subcat_Id='';
+					if(count($arrsubcatg)>0)
+					{
+						foreach($arrsubcatg as $subcat)
+						{
+							$subcat_Id  .=$subcat['id'].",";
+						}
+					}
+					$subcat_Id=rtrim($subcat_Id,",");
+					
+					$arrProducts=$this->Api_model->get_subcategoryproduct($subcat_Id);
+				
+			
+					//$arrProducts=$this->Api_model->get_bestSellerProductBycatId($value['id']);
 					if(count($arrProducts)>0)
 					{
 						foreach($arrProducts as &$prod)
@@ -699,7 +786,7 @@ class Ziqqi_api extends REST_Controller
 							$text = strip_tags($prod['small_desc'], '<br><p><li>');
                             $text = preg_replace ('/<[^>]*>/', PHP_EOL, $text);
 							$prod['small_desc'] = $text;
-							$this->Api_model->setProductId($prod['id']);
+							$this->Api_model->setProductId($prod['product_id']);
 							
 							#set brand id.
 							$this->Api_model->setBrandId($prod['brand_id']);
@@ -724,8 +811,11 @@ class Ziqqi_api extends REST_Controller
 							$prod['image']='';
 							if(count($arrProdImg)>0)
 							{
-								$prod['image']=base_url($arrProdImg[0]['small_image_path']);
+								$prod['image']=PRODUCT_IMAGE.$arrProdImg[0]['large_image_path'];
 							}
+							
+						
+        					
 							$prod['brand_name']='';
 							if(count($arrProdBrand)>0)
 							{
@@ -737,16 +827,58 @@ class Ziqqi_api extends REST_Controller
 						
 			/*	}*/
 				$categoryimage = $this->Api_model->getcategoryimage($value['id']);
-				$value['category_image']    = HTTP_IMAGES_PATH.'category/'.$categoryimage['category_image'];
+			
+			$catImg='na.jpg';
+			if($categoryimage['category_image'])
+			{
+			    	$catImg=$categoryimage['category_image'];
+			}
+				$value['category_image']    = HTTP_IMAGES_PATH.'category/'.$catImg;
 				$value['bestsellerProduct'] = $arrProducts;
+				$value['home_banner'] = PRODUCT_IMAGE.$value['home_banner'];
 			
 			}
 		}
+		$bannerImg='';
+	   if($subcatId==1)
+	   {
+	       $bannerImg='banner_mobiles_tablets1.jpg';
+	   }else if($subcatId==4)
+	   {
+	       $bannerImg='banner_computer1.jpg';
+	   }else if($subcatId==6)
+	   {
+	       $bannerImg='banner_televisions_audio1.jpg';
+	   }
+	   else if($subcatId==7)
+	   {
+	       $bannerImg='banner_camera1.jpg';
+	   }
+	   else if($subcatId==18)
+	   {
+	       $bannerImg='banner_appliances1.jpg';
+	   }
+	   else if($subcatId==19)
+	   {
+	       $bannerImg='banner_gaming1.jpg';
+	   }
+	   else if($subcatId==275)
+	   {
+	       $bannerImg='banner_perfume1.jpg';
+	   }
+	   else if($subcatId==276)
+	   {
+	       $bannerImg='banner_pharmacy1.jpg';
+	   }
+	   else if($subcatId==297)
+	   {
+	       $bannerImg='banner_supermarket1.jpg';
+	   }
 	   
 		#API Response.
 		if(count($arrCategories)>0)
 		{
-			$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=> $arrCategories,'Code'=>200));
+			$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=> $arrCategories,'category_banner'=> HTTP_IMAGES_PATH.'banner_image/'.$bannerImg,'Code'=>200));
 	    }
 		else
 		{
@@ -821,14 +953,21 @@ class Ziqqi_api extends REST_Controller
 					
 					$prod['image'] = '';
 					$arrImg        = array();
+					$productImg    ='';
 					if(count($arrProdImg)>0)
 					{
 						foreach($arrProdImg as $img)
 						{	
-							$arrImg[]              = base_url($img['middle_image_path']);
-							//$arrProducts['image']  = base_url($img['middle_image_path']);
+							$arrImg[]              = PRODUCT_IMAGE.$img['large_image_path'];
+							//$arrProducts['image']  = base_url($img['large_image_path']);
+							if($img['large_image_path'])
+    						{
+    						   $productImg    =PRODUCT_IMAGE.$img['large_image_path'];
+    						}
 						}
-						$prod['image']    = $arrImg;
+						
+						$prod['image']    = $productImg;
+						
 					}
 					
 					$prod['brand_name']='';
@@ -945,7 +1084,7 @@ class Ziqqi_api extends REST_Controller
 					{
 						foreach($arrProdImg as $img)
 						{
-							$arrImg[]                = base_url($img['middle_image_path']);
+							$arrImg[]                = PRODUCT_IMAGE.$img['large_image_path'];
 							$arrProducts['image']    = $arrImg;
 						}
 						
@@ -1103,14 +1242,21 @@ class Ziqqi_api extends REST_Controller
 					
 					$prod['image'] = array();
 					$arrImg        = array();
+					
+					$productImg='';
 					if(count($arrProdImg)>0)
 					{
 						foreach($arrProdImg as $img)
 						{	
-							$arrImg[]        = base_url($img['middle_image_path']);
-							//$arrProducts['image']  = base_url($img['middle_image_path']);
+							$arrImg[] = PRODUCT_IMAGE.$img['large_image_path'];
+							//$arrProducts['image']  = base_url($img['large_image_path']);
+							if($img['large_image_path'])
+							{
+							    $productImg=PRODUCT_IMAGE.$img['large_image_path'];
+							}
 						}
-						$prod['image']    = $arrImg;
+						//$prod['image']    = $arrImg;
+						$prod['image']    = $productImg;
 					}
 					
 					$prod['brand_name']='';
@@ -1205,16 +1351,41 @@ class Ziqqi_api extends REST_Controller
 			
 			$arrProduct=$this->Api_model->get_productById();
 			
-			$cart_item=$this->Api_model->count_cart_item();
+			
 			
 			if(count($arrProduct)>0)
 			{
 				#add product in cart.
-				 $cartResult=$this->Api_model->add_to_cart();
+			    $cartResult=$this->Api_model->add_to_cart();
 			
 				#get user cart data.
 				$cartData=$this->Api_model->get_cartProduct();
 				
+				#get product price.
+				
+				$cartData['mrp_price']."==".$cartData['sale_price'];
+				
+				if(count($cartData)>0)
+				{
+					foreach($cartData as &$pod)
+					{
+						
+						$this->Api_model->setProductId($pod['id']);
+						$arrProdPrice = $this->Api_model->get_productPriceById();
+						
+						$pod['mrp_price']  = "0.00";
+						$pod['sale_price'] = "0.00";
+						if(count($arrProdPrice)>0)
+						{
+							$pod['mrp_price']  = $arrProdPrice['mrp_price'];
+							$pod['sale_price'] = $arrProdPrice['sale_price'];
+							
+						}
+					}
+				}
+			
+				$cart_item=$this->Api_model->count_cart_item();
+			
 				#api response.
 				if($cartResult==true){
 					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Product is added to cart','Payload'=>$cartData,'total_item'=>$cart_item));
@@ -1300,7 +1471,7 @@ class Ziqqi_api extends REST_Controller
 						$prod['image']='';
 						if(count($arrProdImg)>0)
 						{
-							$prod['image']=base_url($arrProdImg[0]['small_image_path']);
+							$prod['image']=PRODUCT_IMAGE.$arrProdImg[0]['large_image_path'];
 						}
 						$prod['brand_name']='';
 						if(count($arrProdBrand)>0)
@@ -1371,7 +1542,7 @@ class Ziqqi_api extends REST_Controller
 				$prod['image']='';
 				if(count($arrProdImg)>0)
 				{
-					$prod['image']=base_url($arrProdImg['small_image_path']);
+					$prod['image']=PRODUCT_IMAGE.$arrProdImg['large_image_path'];
 				}
 				$prod['brand_name']='';
 				if(count($arrProdBrand)>0)
@@ -1415,18 +1586,21 @@ class Ziqqi_api extends REST_Controller
 		{
 			
 			$customer      = $this->Api_model->getcustomerid();
-			$customer_id  = $customer['user_id'];
+			$customer_id   = $customer['user_id'];
 			
 			#set data.
 			$this->Api_model->setuserid($customer_id);
 			$this->Api_model->setProductId($this->post('product_id'));
 			
-			$cartData=$this->Api_model->get_cartProduct();
+		
 			
 			#delete cart product.
 			$result=$this->Api_model->delete_cartProduct();
 			
 			$cart_item=$this->Api_model->count_cart_item();
+			
+			 $cartData=$this->Api_model->get_cartProduct();
+		
 			
 			if($result==true)
 			{  
@@ -1516,7 +1690,6 @@ class Ziqqi_api extends REST_Controller
 		}
 		else
 		{
-			
 			$customer    = $this->Api_model->getcustomerid();
 		    $customer_id = $customer['user_id'];
 			#set data.
@@ -1555,7 +1728,7 @@ class Ziqqi_api extends REST_Controller
 	}
 
     #THIS FUNCTION IS USING FOR ADD BILLING ADDRESS.
-    function addBillingAddress_post(){
+    function addBillingAddress_bck_post(){
 		$auth_token = $this->post('auth_token');
 		$postdata   = array(
 						  //'email'                =>  $this->post('email'),
@@ -1565,6 +1738,8 @@ class Ziqqi_api extends REST_Controller
 						  'country'              =>  $this->post('country'),
 						  'address_details'      =>  $this->post('address_details'), 
 						  'auth_token'           =>  $this->post('auth_token')
+						  
+						  
 		                  );
 	
 	    #check mandatory fields.
@@ -1668,8 +1843,140 @@ class Ziqqi_api extends REST_Controller
 		}
 	} 
 	
+	 function addBillingAddress_post(){
+		
+		$auth_token = $this->post('auth_token');
+		$postdata   = array(
+						  'first_name'           =>  $this->post('first_name'),
+						  'last_name'            =>  $this->post('last_name'),
+						  'mobile'               =>  $this->post('mobile'),
+						  'country'              =>  $this->post('country'), 
+						  'city'                 =>  $this->post('city'),
+						  'location'             =>  $this->post('location'),
+						  'address'              =>  $this->post('address'),
+						  'auth_token'           =>  $auth_token
+		                  );
+	
+	    #check mandatory fields.
+		$this->Api_model->setauthtoken($auth_token);
+		$errorStr      = $this->checkRequiredParam($postdata);
+		$checkToken    = $this->Api_model->istokenExists();
+		$isPrimary     = 0;
+		if(!empty($this->post('is_primary')))
+		{
+			$isPrimary = 1;
+		}
+		
+		if(!empty($errorStr))
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
+		}
+		else if($checkToken == 0)
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'You do not have authentication.','Payload'=>array()));
+		}
+		else
+		{
+			
+			$customer    = $this->Api_model->getcustomerid();
+		    $customer_id = $customer['user_id'];
+			$this->Api_model->setuserid($customer_id); 
+			$arrBillingAdds=$this->Api_model->get_billingAddress();
+			
+			$address_id=$this->post('address_id');
+			
+			
+			$success_msg="Address added successfully.";
+			
+			if(count($arrBillingAdds)>0)
+			{
+				$address_id=$arrBillingAdds['id'];
+					$success_msg="Address updated successfully.";
+			}
+
+		    #set data.
+			
+			$this->Api_model->setfname($this->post('first_name'));
+			$this->Api_model->setlname($this->post('last_name'));
+			$this->Api_model->setphone($this->post('mobile'));
+			$this->Api_model->setCountry($this->post('country'));
+			$this->Api_model->setAddressPrimary($isPrimary);
+			$this->Api_model->setAddressId($address_id);
+			$this->Api_model->setAddress1($this->post('address'));
+			$this->Api_model->setCity($this->post('city'));
+			$this->Api_model->setLocation($this->post('location'));
+			
+			#set blank data in input fields.
+			//$this->Api_model->setlname('');
+			$this->Api_model->setphonecode('');
+			$this->Api_model->setuserName('');
+			$this->Api_model->setAddressDetails($this->post('address'));
+			$this->Api_model->setAddress2('');
+			$this->Api_model->setCity($this->post('city'));
+			$this->Api_model->setState('');
+			$this->Api_model->setPincode('');
+			$this->Api_model->setPhoneProvider('');
+			$this->Api_model->setPayMobile('');
+		
+			#get customer.
+			$arrCustomer = $this->Api_model->get_customer();
+			
+			if(count($arrCustomer)>0)
+			{
+				#save billing address.
+			    $address_id  = $this->Api_model->saveCustomerAddress();
+			 
+				#set address id.
+				$this->Api_model->setAddressId($address_id);
+				
+
+				#add primary shipping address.
+				if($isPrimary == 1)
+				{
+					#get customer addresses.
+					$arrAdrss = $this->Api_model->get_customerBillingAdress();
+					
+					if(count($arrAdrss)>0)
+					{
+						foreach($arrAdrss as $addrss)
+						{
+							if($addrss['id'] != $address_id)
+							{
+								#set update data.
+								$update['id']         = $addrss['id'];
+								$update['is_primary'] = 0;
+								
+								#update customer primary address status.
+								$this->Api_model->updatePrimaryBillingAddrss($update);
+								
+							}
+						}
+					}
+					
+				}
+			
+			
+			    #get billing address.
+				$result      = $this->Api_model->get_billingAddress();
+				
+				#api response.
+				if($result==true)
+				{  
+				  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => $success_msg,'Payload'=>$result));
+				}else{
+				 $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Data not found.','Payload'=>array()));
+				}
+			}
+			else
+			{
+				#customer not found.
+				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'customer not found.','Payload'=>array()));
+			} 
+		}
+	}
+	
 	#THIS FUNCTION IS USING FOR ADD SHIPPING ADDRESS.
-    function addShippingAddress_post(){
+     function addShippingAddress_post(){
 		
 		$auth_token = $this->post('auth_token');
 		$postdata   = array(
@@ -1706,13 +2013,27 @@ class Ziqqi_api extends REST_Controller
 			$customer    = $this->Api_model->getcustomerid();
 		    $customer_id = $customer['user_id'];
 			
+	        $this->Api_model->setuserid($customer_id); 
+			
+			
+			$arrShipAdds =$this->Api_model->get_shippingAddress();
+			
+			$address_id=$this->post('address_id');
+			
+			$success_msg="Address added successfully.";
+			if(count($arrShipAdds)>0)
+			{
+				$address_id=$arrShipAdds['id'];
+				$success_msg="Address updated successfully.";
+			}
+			
 		    #set data.
-			$this->Api_model->setuserid($customer_id); 
+			
 			$this->Api_model->setfname($this->post('name'));
 			$this->Api_model->setphone($this->post('mobile'));
 			$this->Api_model->setCountry($this->post('country'));
 			$this->Api_model->setAddressPrimary($isPrimary);
-			$this->Api_model->setAddressId($this->post('address_id'));
+			$this->Api_model->setAddressId($address_id);
 			$this->Api_model->setAddress1($this->post('address'));
 			$this->Api_model->setCity($this->post('city'));
 			$this->Api_model->setLocation($this->post('location'));
@@ -1723,7 +2044,7 @@ class Ziqqi_api extends REST_Controller
 			$this->Api_model->setuserName('');
 			$this->Api_model->setAddressDetails('');
 			$this->Api_model->setAddress2('');
-			$this->Api_model->setCity('');
+			//$this->Api_model->setCity('');
 			$this->Api_model->setState('');
 			$this->Api_model->setPincode('');
 			$this->Api_model->setPhoneProvider('');
@@ -1735,8 +2056,7 @@ class Ziqqi_api extends REST_Controller
 			{
 				#save shipping address.
 			    $address_id  = $this->Api_model->saveShippingAddress();
-			
-			
+				
 				#set address id.
 				$this->Api_model->setAddressId($address_id);
 				
@@ -1771,7 +2091,7 @@ class Ziqqi_api extends REST_Controller
 				#api response.
 				if($result==true)
 				{  
-				  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Customer shipping address added successfully','Payload'=>$result));
+				  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => $success_msg,'Payload'=>$result));
 				}else{
 				 $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Data not found.','Payload'=>array()));
 				}
@@ -1789,6 +2109,7 @@ class Ziqqi_api extends REST_Controller
 	{
 		$auth_token  = $this->post('auth_token');
 		$arrRatting  = $this->post('ratting');
+		
 		$postdata    = array(
 							'auth_token'   =>  $auth_token
 							);
@@ -1833,21 +2154,35 @@ class Ziqqi_api extends REST_Controller
 				if(count($arrFeedback)>0)
 				{
 					$i=0;
+				
 					foreach($arrFeedback as $feed)
 					{
 						#set data.
 						$this->Api_model->setFeedbackId($feed['id']);
-						$this->Api_model->setFeedbackRatting($arrRatting[$i]);
+						
+						$this->Api_model->setFeedbackRatting(0);
+						
+						foreach ($arrRatting as $key => $rate)
+						{
+	
+							if($feed['id']==$key)
+							{
+								$this->Api_model->setFeedbackRatting($rate);
+							}
+						}
+						
 						$this->Api_model->setCustomerFeedbackId('');
 						
 						#check customer feedback.
 						$arrCustomerFeedback = $this->Api_model->get_customerFeedbckById();
+						
 						if(count($arrCustomerFeedback)>0)
 						{
 							$this->Api_model->setCustomerFeedbackId($arrCustomerFeedback['id']);
 						}
 						
 						#save customer feedback.
+						
 					    $this->Api_model->saveCustomerFeedback();
 						
 					    $i++;
@@ -2005,7 +2340,7 @@ class Ziqqi_api extends REST_Controller
 							$prod['image']='';
 							if(count($arrProdImg)>0)
 							{
-								$prod['image']=base_url($arrProdImg[0]['small_image_path']);
+								$prod['image']=PRODUCT_IMAGE.$arrProdImg[0]['large_image_path'];
 							}
 							$prod['brand_name']='';
 							if(count($arrProdBrand)>0)
@@ -2101,7 +2436,7 @@ class Ziqqi_api extends REST_Controller
 					$prod['image']='';
 					if(count($arrProdImg)>0)
 					{
-						$prod['image']=base_url($arrProdImg[0]['small_image_path']);
+						$prod['image']=PRODUCT_IMAGE.$arrProdImg[0]['large_image_path'];
 					}
 					
 					$prod['brand_name']='';
@@ -2177,6 +2512,42 @@ class Ziqqi_api extends REST_Controller
    
 
     #THIS FUNCTION IS USING FOR SEND OTP EMAIL.
+    
+    private function email_otp($otp,$email,$contact_num,$name,$bodymsg,$subject){
+		// Always set content-type when sending HTML email
+		$headers = "MIME-Version: 1.0" . "\r\n";
+		$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+
+		// More headers
+		$headers .= 'From: <info@idukaan.ae>' . "\r\n";
+		$headers .= 'Cc: info@idukaan.ae' . "\r\n";
+		mail($email,$subject,$bodymsg,$headers);
+		$success = 'success';
+		return $success;
+
+    }
+	private function phone_otp($mobileno,$code,$message)
+    {
+        
+        
+          $url ="https://esahal.com/idukaan2333/sms.php?acct=idukaan2333&user=idukaanzqi&password=ZvaRnmiC3c&ref=".$code."&to=".$mobileno."&msg=".$message;
+ 
+            //https://esahal.com/idukaan2333/sms.php?acct=idukaan2333&user=idukaanzqi&password=ZvaRnmiC3c&ref=123456&to=971551227712&msg=test
+            // create a new cURL resource
+            $ch = curl_init();
+            
+            // set URL and other appropriate options
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+           // curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1);
+           curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            
+            // grab URL and pass it to the browser
+            curl_exec($ch);
+            
+            // close cURL resource, and free up system resources
+            curl_close($ch);
+    }
     private function SendmailOtp($otp,$email,$contact_num,$name,$bodymsg,$subject){
         #Pear Mail Libraryhi
      
@@ -2195,10 +2566,11 @@ class Ziqqi_api extends REST_Controller
 
 		$ci->email->from('info@ziqqi.com', 'Ziqqi');
 		$ci->email->to($email);
-		$this->email->reply_to('ajathtesting@gmail.com', 'Explendid Videos');
+		$ci->email->reply_to('ajathtesting@gmail.com', 'Explendid Videos');
 		$ci->email->subject($subject);
 		$ci->email->message($bodymsg);
-		$ci->email->send();
+		$send=$ci->email->send();
+		
 		$success = 'success';
 		return $success;
 
@@ -2273,14 +2645,23 @@ class Ziqqi_api extends REST_Controller
 					
 					$prod['image'] = array();
 					$arrImg        = array();
+					$productImg    = '';
 					if(count($arrProdImg)>0)
 					{
 						foreach($arrProdImg as $img)
 						{	
-							$arrImg[]        = base_url($img['middle_image_path']);
-							//$arrProducts['image']  = base_url($img['middle_image_path']);
+							$arrImg[]        = PRODUCT_IMAGE.$img['large_image_path'];
+							//$arrProducts['image']  = base_url($img['large_image_path']);
+							
+							if($img['large_image_path'])
+							{
+							    $productImg=PRODUCT_IMAGE.$img['large_image_path'];
+							}
 						}
-						$prod['image']    = $arrImg;
+						//$prod['image']    = $arrImg;
+						$prod['image']      = $productImg;
+						
+						
 					}
 					
 					$prod['brand_name']='';
@@ -2307,7 +2688,7 @@ class Ziqqi_api extends REST_Controller
 			}
 		
 			#API Response.
-			if(count($arrsimilarProducts))
+			if(count($arrsimilarProducts)>0)
 			{
 				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrsimilarProducts,'Code'=>200));
 			}
@@ -2323,6 +2704,7 @@ class Ziqqi_api extends REST_Controller
 	#THIS FUNCTION IS USING FOR deals.
 	function deals_post()
 	{   
+	    
 
 		         $limit = 15; 
                  $start = 0;
@@ -2333,6 +2715,7 @@ class Ziqqi_api extends REST_Controller
                  $page = $page;   
                  }
                  $start = ($page - 1)*$limit;
+                
 		    $arrdealsProducts=$this->Api_model->getfeaturedproducts($start,$limit);
 			if(count($arrdealsProducts)>0)
 			{
@@ -2363,14 +2746,22 @@ class Ziqqi_api extends REST_Controller
 					
 					$prod['image'] = array();
 					$arrImg        = array();
+					$productImg='';
 					if(count($arrProdImg)>0)
 					{
 						foreach($arrProdImg as $img)
 						{	
-							$arrImg[]        = base_url($img['middle_image_path']);
-							//$arrProducts['image']  = base_url($img['middle_image_path']);
+							//$arrImg[]        = PRODUCT_IMAGE.$img['large_image_path'];
+						
+							//$arrProducts['image']  = base_url($img['large_image_path']);
+							if($img['large_image_path'])
+							{
+							   $productImg=PRODUCT_IMAGE.$img['large_image_path'];
+							}
 						}
-						$prod['image']    = $arrImg;
+						//$prod['image']    = $arrImg;
+					    $prod['image']    = $productImg;
+						
 					}
 					
 					$prod['brand_name']='';
@@ -2385,7 +2776,7 @@ class Ziqqi_api extends REST_Controller
 			#API Response.
 			if(count($arrdealsProducts))
 			{
-				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrdealsProducts,'Code'=>200));
+				$this->response(array('Error'=>false,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrdealsProducts,'category_banner'=> HTTP_IMAGES_PATH.'category/slide-110.jpg'.$bannerImg,'Code'=>200));
 			}
 			else
 			{
@@ -2453,8 +2844,8 @@ class Ziqqi_api extends REST_Controller
 				{
 					foreach($arrProdImg as $img)
 					{	
-						$arrImg[]        = base_url($img['middle_image_path']);
-						//$arrProducts['image']  = base_url($img['middle_image_path']);
+						$arrImg[]        = PRODUCT_IMAGE.$img['large_image_path'];
+						//$arrProducts['image']  = base_url($img['large_image_path']);
 					}
 					$prod['image']    = $arrImg;
 				}
@@ -2532,6 +2923,7 @@ class Ziqqi_api extends REST_Controller
 						$this->Api_model->setProductId($ord['product_id']);
 						
 						$arrProducts=$this->Api_model->get_productById();
+						
 						$this->Api_model->setBrandId($arrProducts['brand_id']);
 						
 						#get product image.
@@ -2543,7 +2935,7 @@ class Ziqqi_api extends REST_Controller
 						$ord['product_image']='';
 						if(count($arrProdImg)>0)
 						{
-							$ord['product_image']=base_url($arrProdImg[0]['small_image_path']);
+							$ord['product_image']=PRODUCT_IMAGE.$arrProdImg[0]['large_image_path'];
 						}
 						$ord['brand_name']='';
 						if(count($arrProdBrand)>0)
@@ -2736,7 +3128,37 @@ class Ziqqi_api extends REST_Controller
 			$pickup_address= $this->post('pickup_address');
 		}
 		
+		$payment_method='ZAAD';
+		if(!empty($this->post('payment_method')))
+		{
+			$payment_method= $this->post('payment_method');
+		}
 		
+		$order_status='Order Received';
+		if(!empty($this->post('order_status')))
+		{
+			$order_status= $this->post('order_status');
+		}
+		
+		$payment_status='unpaid';
+		if(!empty($this->post('payment_status')))
+		{
+			$payment_status= $this->post('payment_status');
+		}
+		
+		$transaction_id=uniqid();
+		if(!empty($this->post('transaction_id')))
+		{
+			$transaction_id= $this->post('transaction_id');
+		}
+		
+		$pay_mobile='';
+		if(!empty($this->post('wallet_mobile_no')))
+		{
+			$pay_mobile= $this->post('wallet_mobile_no');
+		}
+		
+				
 	    #check mandatory fields.
 		$this->Api_model->setauthtoken($auth_token);
 		
@@ -2760,6 +3182,9 @@ class Ziqqi_api extends REST_Controller
 			$this->Api_model->setuserid($customer_id);
 			
 			$customer =  $this->Api_model->get_customer();
+		    $usd_to_sls=  $this->Api_model->get_usd_to_sls();
+				
+				
 			if(count($customer)>0)
 			{
 				
@@ -2792,20 +3217,22 @@ class Ziqqi_api extends REST_Controller
 					$order['pickup_location']          = $pickup_location;
 					$order['pickup_address']           = $pickup_address;
 					$order['pickup_address_details']   = '';
-					$order['pay_mobile']               = '';
+					$order['pay_mobile']               = $pay_mobile;
 					$order['total_amount']             = $cartData['total'];
 					$order['shipping_amount']          = $cartData['shipping'];
 					$order['discount_amount']          = '';
 					$order['coupon_code']              = '';
-					$order['payment_gateway']          = 'Zaad';
-					$order['status']                   = 'Order Received';
+					$order['grand_total']              = $cartData['total'];
+					$order['sls_grand_total']          = $usd_to_sls['value']*$cartData['total'];
+					$order['payment_gateway']          = ucfirst($payment_method);
+					$order['status']                   = $order_status;
 					
 					
-					$order['payment_status']           = 'unpaid';
+					$order['payment_status']           = $payment_status;
 					$order['status_detail']            = '';
 					$order['payment_currency']         = '';
 					$order['authcode']                 = '';
-					$order['txnid']                    = uniqid();
+					$order['txnid']                    = $transaction_id;
 					$order['zoho_sales_order_id']      = '';
 					$order['payer_email']              = '';
 					$order['customer_note']            = '';
@@ -2819,7 +3246,7 @@ class Ziqqi_api extends REST_Controller
 						$item['orders_id']                      = $order_id;
 						$item['product_id']                     = $cartProduct['id'];
 						$item['product_name']                   = $cartProduct['name'];
-						$item['product_variation_id']           = $cartProduct['product_variant_id'];
+						$item['product_variation_id']           = '';
 						$item['product_variation_details']      = '';
 						$item['price']                          = $cartProduct['sale_price'];
 						$item['qty']                            = $cartProduct['qty'];
@@ -2836,7 +3263,7 @@ class Ziqqi_api extends REST_Controller
 					$arrOrders  =  $this->Api_model->get_orderDetails();
 					if(count($arrOrders)>0)
 					{
-					    $this->Api_model->delete_cartProduct();
+					    $this->Api_model->delete_customer_cart();
 					    $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Order placed successfully','Payload'=>$arrOrders));
 					}else{
 					    $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' =>'Order not found.','Payload'=>array()));
@@ -2853,13 +3280,11 @@ class Ziqqi_api extends REST_Controller
 	    }
 	}
 	
-	#THIS FUNCTION IS USING FOR GET COMMUNICATION PREFERENCE.
+	#THIS FUNCTION IS USING FOR GET communication_preferences.
 	function getPreference_get()
 	{
 		
 		$arrpreference = $this->Api_model->get_preference();
-		
-		#API response.
 		if(!empty($arrpreference))
 		{
 			 $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Data fetched successfully','Payload'=>$arrpreference));
@@ -2870,8 +3295,7 @@ class Ziqqi_api extends REST_Controller
 			
 	    }
 	}
-	
-	#THIS FUNCTION IS USING FOR GET RECOMMENDATION.
+	#THIS FUNCTION IS USING FOR GET communication_preferences.
 	function changeRecommendation_post()
 	{
 		
@@ -2895,7 +3319,6 @@ class Ziqqi_api extends REST_Controller
 			$this->Api_model->update_recomdation($update);
 			$arrRecommendation = $this->Api_model->get_recommendation();
 	
-	        #api response.
 			if(count($arrRecommendation)>0)
 			{
 				  
@@ -2909,5 +3332,267 @@ class Ziqqi_api extends REST_Controller
 			}
 	    }
 	}
+	 
+	#THIS FUNCTION IS USING FOR UPDATE USER PROFILE.
+	function updateCustomerProfile_post(){
+		$auth_token     =  $this->post('auth_token');
+		$first_name     =  $this->post('first_name');
+		$last_name      =  $this->post('last_name');
+		$gender         =  $this->post('gender');
+		$phone_code     =  $this->post('phone_code');
+		
+		$postdata       = array(
+							'auth_token'         =>  $auth_token,
+							'first_name'         =>  $first_name,
+							'last_name'          =>  $last_name,
+							'gender'             =>  $gender,
+							'phone_code'         =>  $phone_code
+					     	);
+		
+		$this->Api_model->setauthtoken($auth_token);
+		$errorStr      = $this->checkRequiredParam($postdata);
+		$checkToken    = $this->Api_model->istokenExists();
+		
+	   
+		if(!empty($errorStr))
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
+		
+		}else if($checkToken == 0)
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'You do not have authentication.','Payload'=>array()));
+		}
+		else{
+			
+		    $customer    = $this->Api_model->getcustomerid();
 	
+		    $customer_id = $customer['user_id'];
+			#set data.
+			$this->Api_model->setuserid($customer_id);
+
+			
+			#get customer.
+			$arrCustomer = $this->Api_model->get_customer();
+
+			if(count($arrCustomer)>0)
+			{
+		
+                $this->Api_model->setfname($first_name);
+				$this->Api_model->setlname($last_name);
+				$this->Api_model->setGender(ucfirst($gender));
+                $this->Api_model->setphonecode($phone_code);
+			
+			    $customerId = $this->Api_model->upadate_profile();
+				$arrCustomer = $this->Api_model->get_customer();
+	
+			    #api response.
+				if($customerId==true){
+					$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrCustomer));
+				}else{
+					$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'something went wrong','Payload'=>array()));
+				}
+				
+			}else{
+				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Customer not found.','Payload'=>array()));
+			}
+		}
+	}
+	
+	#THIS FUNCTION IS USING FOR GET country.
+	function country_master_get(){
+		
+		$arrcountry = $this->Api_model->get_country();
+		#api response.
+		if(count($arrcountry)>0)
+		{
+			$this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrcountry));
+		}else{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'country not found.','Payload'=>array()));
+		}
+	}
+	
+	#THIS FUNCTION IS USING FOR GET STATE.
+	function  getState_post(){
+		$country_id     =  $this->post('country_id');
+		$postdata       = array(
+							'country_id'         =>  $country_id
+					     	);
+		
+		
+		$errorStr      = $this->checkRequiredParam($postdata);
+		if(!empty($errorStr))
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
+		
+		}
+		else{
+		
+			#set data.
+			$this->Api_model->setcountryid($country_id);
+			
+			#get customer.
+			$arrState = $this->Api_model->get_state();
+
+			if(count($arrState)>0)
+			{
+		       
+			    $this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrState));
+			}else{
+				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'state not found','Payload'=>array()));
+			}
+				
+			
+		}
+	}
+	#THIS FUNCTION IS USING FOR GET STATE.
+	function  getCity_post(){
+		$country_id     =  $this->post('country_id');
+		$postdata       = array(
+							'country_id'         =>  $country_id
+					     	);
+		
+		
+		$errorStr      = $this->checkRequiredParam($postdata);
+		if(!empty($errorStr))
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
+		
+		}
+		else{
+		
+		  
+		    #set data.
+			$arrCity=array();
+			$this->Api_model->setcountryid($country_id);
+			
+			#get state.
+			$arrState = $this->Api_model->get_state();
+			if(count($arrState)>0)
+			{
+				$i=0;
+				foreach($arrState as $state)
+				{
+					$this->Api_model->setstateid($state['id']);
+					$arrNewCity = $this->Api_model->get_city();
+					if(count($arrNewCity)>0)
+					{
+						foreach($arrNewCity as $newCity)
+						{
+							array_push($arrCity, $newCity);
+						}
+					}
+				}
+			}
+			if(count($arrCity)>0)
+			{
+		       
+			    $this->response(array('Error'=>false,'Code'=>200,'Status'=>1,'Message' => 'Data fatched successfully.','Payload'=>$arrCity));
+			}else{
+				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'state not found','Payload'=>array()));
+			}
+				
+			
+		}
+	}
+	
+	#THIS FUNCTION IS USING FOR TRACK CUSTOMER ORDERS.
+	function orderTracking_post()
+	{
+		$auth_token  = $this->post('auth_token');
+		$postdata    = array('auth_token'   =>  $auth_token);
+		
+	    #check mandatory fields.
+		$this->Api_model->setauthtoken($auth_token);
+		$errorStr      = $this->checkRequiredParam($postdata);
+		$checkToken    = $this->Api_model->istokenExists();
+		$checkToken   =1;
+
+		if(!empty($errorStr))
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Please fill these all mandatory fields '.$errorStr,'Payload'=>array()));
+		}else if($checkToken == 0)
+		{
+			$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'You do not have authentication.','Payload'=>array()));
+		}
+		else
+		{
+			$customer    = $this->Api_model->getcustomerid();
+		    $customer_id = $customer['user_id'];
+			#set data.
+		    $this->Api_model->setuserid($customer_id); 
+			
+			#get customer.
+			$arrCustomer = $this->Api_model->get_customer();
+			
+	
+			if(count($arrCustomer)>0)
+			{
+				#get customer orders.
+				
+			    $arrOrders  =  $this->Api_model->get_customerOrders();
+				
+				if(count($arrOrders)>0)
+				{
+					foreach($arrOrders as &$ord)
+					{
+						
+						$this->Api_model->setorderid($ord['id']);
+						
+						$arrOrderStatus=$this->Api_model->get_orderStatus();
+						
+						$this->Api_model->setProductId($ord['product_id']);
+						
+						$arrProducts=$this->Api_model->get_productById();
+						
+						$this->Api_model->setBrandId($arrProducts['brand_id']);
+						
+						#get product image.
+						$arrProdImg   = $this->Api_model->get_productImageById();
+							
+						#get brand.
+						$arrProdBrand = $this->Api_model->get_brandById();
+							
+						$ord['product_image']='';
+						if(count($arrProdImg)>0)
+						{
+							$ord['product_image']=PRODUCT_IMAGE.$arrProdImg[0]['large_image_path'];
+						}
+						$ord['brand_name']='';
+						if(count($arrProdBrand)>0)
+						{
+							$ord['brand_name']=$arrProdBrand['name'];
+						}
+						
+						$ord['status']=$ord['status'];
+						if(count($arrOrderStatus)>0)
+						{
+							$ord['status']=$arrOrderStatus['status'];
+						}
+						
+						$ord['product_desc']='';
+						if(count($arrProducts)>0)
+						{
+							$ord['product_desc']=$arrProducts['overview'];
+						}
+						
+						$ord['customer_name']=$arrCustomer->first_name." ".$arrCustomer->last_name;
+					}
+					
+				}
+			
+				#api response.
+				if($arrOrders==true)
+				{  
+				  $this->response(array('Error'=>false,'Code'=>200,'Status'=>0,'Message' => 'Customer Order fetched successfully','Payload'=>$arrOrders));
+				}else{
+				 $this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'Data not found.','Payload'=>array()));
+				}
+			}
+			else
+			{
+				#customer not found.
+				$this->response(array('Error'=>true,'Code'=>204,'Status'=>0,'Message' => 'customer not found.','Payload'=>array()));
+			}
+	    }
+	}
 }

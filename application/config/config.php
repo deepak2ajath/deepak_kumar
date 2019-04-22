@@ -28,9 +28,9 @@ $root .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME'
 $config['base_url']	= 'https://www.idukaan.ae/demo1';
 
 
-define('HTTP_CSS_PATH', $config['base_url'].'assets/frontend/css/');
-define('HTTP_IMAGES_PATH', 'https://www.idukaan.ae/api/assets/frontend/images/');
-define('HTTP_JS_PATH', $config['base_url'].'assets/frontend/js/');
+// define('HTTP_CSS_PATH', $config['base_url'].'assets/frontend/css/');
+// define('HTTP_IMAGES_PATH', 'https://www.idukaan.ae/api/assets/frontend/images/');
+// define('HTTP_JS_PATH', $config['base_url'].'assets/frontend/js/');
 define("HASHTOKEN", "A838hkkkfu0@&gCTAum78@@5h", true);
 
 /*
