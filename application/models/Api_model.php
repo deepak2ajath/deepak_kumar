@@ -458,21 +458,7 @@ Class Api_model extends CI_Model{
     function reset_password()
     {
         
-            $this->load->library('email');
-			$mail_config['smtp_host'] = 'smtp.gmail.com';
-            $mail_config['smtp_port'] = '587';
-            $mail_config['smtp_user'] = 'ajathtesting@gmail.com';
-            $mail_config['_smtp_auth'] = TRUE;
-            $mail_config['smtp_pass'] = 'nisar@12345';
-            $mail_config['smtp_crypto'] = 'tls';
-            $mail_config['protocol'] = 'smtp';
-            $mail_config['mailtype'] = 'html';
-            $mail_config['send_multipart'] = FALSE;
-            $mail_config['charset'] = 'utf-8';
-            $mail_config['wordwrap'] = TRUE;
-            $this->email->initialize($mail_config);
-            
-            $this->email->set_newline("\r\n");
+      
            
 				//Load email library
 		
@@ -498,16 +484,19 @@ Class Api_model extends CI_Model{
 					 
 				}else{
 					$to = $this->_username;
+					$from='info@idukaan.ae';
 					$subject = 'Ziqqi : Password Reset';
 					$message = '<p>Your vefication code  is :<br>'.$new_password.'<br/><br/><br/>From<br/>Team Ziqqi</p>';
 					// Always set content-type when sending HTML email
-					$headers = "MIME-Version: 1.0" . "\r\n";
-					$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-
-					// More headers
-					$headers .= 'From: <info@idukaan.ae>' . "\r\n";
-					$headers .= 'Cc: info@idukaan.ae' . "\r\n";
-					$send=mail($to,$subject,$message,$headers);
+				
+						$headers = "From: " . strip_tags($from) . "\r\n";
+            			$headers .= "Reply-To: ". strip_tags($to) . "\r\n";
+            			$headers .= "CC: info@idukaan.ae \r\n";
+            			$headers .= "MIME-Version: 1.0\r\n";
+            			$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		
+				    	$send=mail($to,$subject,$message,$headers);
+				
 				}
                
            }else{
@@ -1406,9 +1395,8 @@ Class Api_model extends CI_Model{
         $this->db->where('product_id', $this->_product_id); 
 		 $this->db->where('customers_id', $this->_user_id);
         $count = $this->db->count_all_results();
-        
         if ($count > 0){
-            return true;
+            return $count;
         }else{
             return false;
         }
@@ -1490,7 +1478,7 @@ Class Api_model extends CI_Model{
 	#THIS FUNCTION IS USING FOR GET CUSTOMER ORDERS.
 	function get_customerOrders()
     {
-        $this->db->select('orders.id,orders.order_datetime,orders.customers_id,orders.total_amount,orders.shipping_amount,orders.discount_amount,orders.grand_total,orders.payment_gateway,orders.status,order_item.orders_id,order_item.product_id,order_item.product_name,order_item.price,order_item.qty');
+        $this->db->select('orders.id,orders.order_datetime,orders.customers_id,orders.total_amount,orders.shipping_amount,orders.discount_amount,orders.grand_total,orders.payment_gateway,orders.status,orders.payment_status,order_item.orders_id,order_item.product_id,order_item.product_name,order_item.price,order_item.qty');
         $this->db->from('orders');
         $this->db->join('order_item', 'orders.id = order_item.orders_id','INNER');
         $this->db->where('orders.customers_id', $this->_user_id);
@@ -1667,6 +1655,7 @@ Class Api_model extends CI_Model{
         return $query->row_array(); 
 	}
 	
+
 	function sendBSms($mobileno,$code,$message)
     {
         $message = urlencode($message);
